@@ -148,6 +148,8 @@
     .cm .del { color: var(--muted); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; align-self: center; }
     .cm .del:hover { background: var(--panel2); color: #ff6b6b; }
     .cm.rep { margin-left: 46px; }
+    .showrep { margin: 0 0 6px 46px; color: var(--muted); font-weight: 700; font-size: .85rem; }
+    .showrep:hover { color: var(--text); }
     .cm .acts { display: flex; gap: 14px; align-items: center; font-size: .8rem; color: var(--muted); }
     .cm .acts button { color: var(--muted); font-weight: 700; font-size: .8rem; }
     .cm .acts button:hover { color: var(--text); }
@@ -950,7 +952,7 @@
   }
   async function openComments(v, onCount) {
     closeMenus();
-    cv = { v: v, onCount: onCount, rows: [], likes: {}, mine: new Set(), reply: null };
+    cv = { v: v, onCount: onCount, rows: [], likes: {}, mine: new Set(), reply: null, open: new Set() };
     $("cpanel").classList.add("show");
     $("cTitle").textContent = "Comments";
     var list = $("clist"); list.textContent = ""; list.appendChild(el("div", "cmuted", "Loading..."));
@@ -971,14 +973,21 @@
     renderComments();
   }
   function renderComments() {
-    var list = $("clist"); list.textContent = "";
+    var list = $("clist"), keep = list.scrollTop; list.textContent = "";
     var rows = cv.rows, kids = {};
     if (!rows.length) list.appendChild(el("div", "cmuted", "No comments yet. Be the first!"));
     rows.forEach(function (c) { if (c.parent_id) (kids[c.parent_id] = kids[c.parent_id] || []).push(c); });
     rows.filter(function (c) { return !c.parent_id; }).reverse().forEach(function (c) {
       list.appendChild(commentRow(c, false));
-      (kids[c.id] || []).forEach(function (k) { list.appendChild(commentRow(k, true)); });
+      var k = kids[c.id] || [];
+      if (!k.length) return;
+      var open = cv.open.has(c.id);
+      var t = el("button", "showrep", open ? "Hide replies" : "Show " + k.length + (k.length === 1 ? " reply" : " replies"));
+      t.addEventListener("click", function () { if (open) cv.open.delete(c.id); else cv.open.add(c.id); renderComments(); });
+      list.appendChild(t);
+      if (open) k.forEach(function (r) { list.appendChild(commentRow(r, true)); });
     });
+    list.scrollTop = keep;
     $("cTitle").textContent = fmt(cv.v.commentCount) + " comments";
   }
   function commentRow(c, isRep) {
@@ -1038,7 +1047,7 @@
     $("cSend").disabled = false;
     if (r.error) { toast("Could not post comment"); return; }
     if (!cv || cv.v !== v) return;
-    cv.rows.push(r.data); v.commentCount++; cv.onCount(); setReply(null); $("cInput").value = ""; renderComments();
+    cv.rows.push(r.data); if (reply) cv.open.add(reply.id); v.commentCount++; cv.onCount(); setReply(null); $("cInput").value = ""; renderComments();
   });
 
   /* ---------- viewer (open a video from a grid) ---------- */
