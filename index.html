@@ -1590,13 +1590,8 @@
     var ur = await sb.auth.getUser();
     var u = ur && ur.data && ur.data.user;
     if (!u) { toast("Please log in again"); openModal("login"); return; }
-    var hasPw = (u.identities || []).some(function (i) { return i.provider === "email"; });
-    if (!hasPw) {
-      var np = popup("No password on this account", "You log in with Google or Discord, so there is no password to change.");
-      var ok = el("button", "btn", "OK"); ok.style.cssText = "width:100%;margin-top:6px";
-      ok.addEventListener("click", np.close); np.m.appendChild(ok);
-      return;
-    }
+    var hasPw = hasPassword(u);
+    if (!hasPw) { askCreatePassword(u, true); return; }
     var pp = popup("Change password", "Enter your current password, then choose a new one.");
     function field(ph, ac) {
       var i = document.createElement("input");
@@ -1850,6 +1845,52 @@
       (r[5].data || []).forEach(function (x) { state.requested.add(x.target_id); });
     } catch (e) {}
   }
+  /* ---------- create a password after Google / Discord login ---------- */
+  var pwAsking = false;
+  function hasPassword(au) {
+    var viaEmail = (au.identities || []).some(function (i) { return i.provider === "email"; });
+    return viaEmail || !!(au.user_metadata && au.user_metadata.has_password === true);
+  }
+  function askCreatePassword(au, manual) {
+    if (pwAsking || !sb) return;
+    if (!au.email) { if (manual) toast("This account has no email address to log in with"); return; }
+    pwAsking = true;
+    var prov = (au.app_metadata && au.app_metadata.provider) || "";
+    prov = prov ? prov.charAt(0).toUpperCase() + prov.slice(1) : "your login";
+    var ov = el("div", "overlay show"), m = el("div", "modal");
+    m.appendChild(el("h3", null, "Create a password"));
+    m.appendChild(el("p", "sub", "You signed in with " + prov + ". Choose a password so you can also log in with your email, then type it again to confirm."));
+    function field(ph) {
+      var i = document.createElement("input");
+      i.type = "password"; i.className = "field"; i.placeholder = ph; i.autocomplete = "new-password"; i.style.marginBottom = "10px";
+      m.appendChild(i); return i;
+    }
+    var a = field("Password (at least 6 characters)");
+    var b = field("Type the password again");
+    var err = el("div", "error"); m.appendChild(err);
+    var go = el("button", "btn", "Create password"); go.style.cssText = "width:100%;margin-top:6px";
+    var skip = el("button", "btn line", "Not now"); skip.style.cssText = "width:100%;margin-top:8px";
+    m.appendChild(go); m.appendChild(skip);
+    function done() { pwAsking = false; ov.remove(); }
+    skip.addEventListener("click", function () {
+      try { sessionStorage.setItem("vibin_pw_skip_" + au.id, "1"); } catch (e) {}
+      done();
+    });
+    async function submit() {
+      err.textContent = "";
+      if (a.value.length < 6) { err.textContent = "Password must be at least 6 characters."; return; }
+      if (a.value !== b.value) { err.textContent = "The two passwords do not match."; return; }
+      go.disabled = true;
+      var r = await sb.auth.updateUser({ password: a.value, data: { has_password: true } });
+      go.disabled = false;
+      if (r.error) { err.textContent = r.error.message; return; }
+      done(); toast("Password created. You can now log in with your email and password.");
+    }
+    go.addEventListener("click", submit);
+    [a, b].forEach(function (i) { i.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); submit(); } }); });
+    ov.appendChild(m); document.body.appendChild(ov); a.focus();
+  }
+
   var sessionSeq = 0;
   async function applySession(session, announce) {
     var seq = ++sessionSeq, was = state.user;
@@ -1864,6 +1905,8 @@
       await loadMySets();
       if (seq !== sessionSeq) return;
       if (announce && !was) toast("Welcome, " + name);
+      var skipped = false; try { skipped = sessionStorage.getItem("vibin_pw_skip_" + au.id) === "1"; } catch (e) {}
+      if (!skipped && !hasPassword(au)) setTimeout(function () { askCreatePassword(au, false); }, 700);
     } else {
       state.user = null; state.requested = new Set(); state.reposts = new Set(); state.blocked = new Set(); state.likes = new Set(); state.saves = new Set(); state.following = new Set();
       if (announce && was) toast("Logged out");
