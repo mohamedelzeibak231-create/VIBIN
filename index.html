@@ -1586,10 +1586,50 @@
     toast(r.error ? r.error.message : "Check your inbox to confirm the new email");
   }
   async function changePassword() {
-    var pw = prompt("New password (at least 6 characters)"); if (!pw) return;
-    if (pw.length < 6) { toast("Password must be at least 6 characters"); return; }
-    var r = await sb.auth.updateUser({ password: pw });
-    toast(r.error ? r.error.message : "Password changed");
+    if (!need()) return;
+    var ur = await sb.auth.getUser();
+    var u = ur && ur.data && ur.data.user;
+    if (!u) { toast("Please log in again"); openModal("login"); return; }
+    var hasPw = (u.identities || []).some(function (i) { return i.provider === "email"; });
+    if (!hasPw) {
+      var np = popup("No password on this account", "You log in with Google or Discord, so there is no password to change.");
+      var ok = el("button", "btn", "OK"); ok.style.cssText = "width:100%;margin-top:6px";
+      ok.addEventListener("click", np.close); np.m.appendChild(ok);
+      return;
+    }
+    var pp = popup("Change password", "Enter your current password, then choose a new one.");
+    function field(ph, ac) {
+      var i = document.createElement("input");
+      i.type = "password"; i.className = "field"; i.placeholder = ph; i.autocomplete = ac; i.style.marginBottom = "10px";
+      pp.m.appendChild(i); return i;
+    }
+    var cur = field("Current password", "current-password");
+    var nw = field("New password (at least 6 characters)", "new-password");
+    var cf = field("Confirm new password", "new-password");
+    var err = el("div", "error"); pp.m.appendChild(err);
+    var go = el("button", "btn", "Change password"); go.style.cssText = "width:100%;margin-top:6px";
+    pp.m.appendChild(go);
+    async function submit() {
+      err.textContent = "";
+      if (!cur.value) { err.textContent = "Enter your current password."; return; }
+      if (nw.value.length < 6) { err.textContent = "New password must be at least 6 characters."; return; }
+      if (nw.value !== cf.value) { err.textContent = "The new passwords do not match."; return; }
+      if (nw.value === cur.value) { err.textContent = "Your new password must be different from the current one."; return; }
+      go.disabled = true;
+      var chk = await sb.auth.signInWithPassword({ email: u.email, password: cur.value });
+      if (chk.error) {
+        go.disabled = false;
+        err.textContent = /invalid login|credentials/i.test(chk.error.message || "") ? "Current password is incorrect." : (chk.error.message || "Could not check your password.");
+        return;
+      }
+      var r = await sb.auth.updateUser({ password: nw.value });
+      go.disabled = false;
+      if (r.error) { err.textContent = r.error.message; return; }
+      pp.close(); toast("Password changed");
+    }
+    go.addEventListener("click", submit);
+    [cur, nw, cf].forEach(function (i) { i.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); submit(); } }); });
+    cur.focus();
   }
   async function switchPopup() {
     var cur = await sb.auth.getSession();
