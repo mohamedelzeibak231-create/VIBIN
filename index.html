@@ -147,6 +147,41 @@
     .cm .when { font-size: .8rem; color: var(--muted); }
     .cm .del { color: var(--muted); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; align-self: center; }
     .cm .del:hover { background: var(--panel2); color: #ff6b6b; }
+    .screen { color: #fff; }
+    :root[data-theme="light"] { --bg: #fff; --panel: #f5f5f7; --panel2: #ebebef; --text: #161823; --muted: #6b6b76; --line: #e4e4e9; }
+    :root[data-theme="light"] .bottom { background: var(--bg); }
+    :root[data-theme="light"] .cp.active { color: #fff; }
+    :root[data-theme="light"] .bio { color: var(--text); }
+    :root[data-theme="light"] .rbtn .c { background: rgba(0,0,0,.07); }
+    @media (max-width: 760px) { :root[data-theme="light"] .rbtn:not(.on) { color: #fff; } :root[data-theme="light"] .rbtn .c { background: rgba(255,255,255,.14); } }
+    .setbox { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .srow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+    .srow:last-child { border-bottom: 0; }
+    button.srow:hover { background: var(--panel2); }
+    .srow .st { flex: 1; min-width: 0; }
+    .srow .sl { font-weight: 700; }
+    .srow .ss { color: var(--muted); font-size: .85rem; margin-top: 2px; overflow-wrap: anywhere; }
+    .srow .sv { color: var(--muted); font-size: .9rem; }
+    .srow.danger .sl { color: #ff6b6b; }
+    .srow select { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; color: var(--text); }
+    .tgl { width: 46px; height: 28px; border-radius: 99px; background: var(--panel2); border: 1px solid var(--line); position: relative; flex: none; transition: background .15s; }
+    .tgl i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.4); transition: left .15s; }
+    .tgl.on { background: linear-gradient(90deg, var(--accent), var(--accent2)); border-color: transparent; }
+    .tgl.on i { left: 21px; }
+    .acct .btn { margin-left: 6px; }
+    .cm.rep { margin-left: 46px; }
+    .showrep { margin: 0 0 6px 46px; color: var(--muted); font-weight: 700; font-size: .85rem; }
+    .showrep:hover { color: var(--text); }
+    .cm .acts { display: flex; gap: 14px; align-items: center; font-size: .8rem; color: var(--muted); }
+    .cm .acts button { color: var(--muted); font-weight: 700; font-size: .8rem; }
+    .cm .acts button:hover { color: var(--text); }
+    .cm .lk { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); font-size: .72rem; align-self: center; min-width: 28px; }
+    .cm .lk.on { color: var(--like); }
+    .cm .lk.on svg { fill: currentColor; }
+    .cm .txt a, .bio a { font-weight: 700; }
+    .mention { position: fixed; z-index: 95; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+    .mention button { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 8px; font-weight: 600; }
+    .mention button:hover { background: var(--panel2); }
     .cform { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
     .cform input { flex: 1; min-width: 0; background: var(--panel2); border: 1px solid transparent; border-radius: 999px; padding: 11px 16px; outline: none; }
     .cform input:focus { border-color: var(--accent2); }
@@ -299,6 +334,7 @@
     <section class="view" id="view-upload"></section>
     <section class="view" id="view-profile"></section>
     <section class="view" id="view-search"></section>
+    <section class="view" id="view-settings"></section>
 
     <div id="cpanel">
       <div class="chead"><span id="cTitle">Comments</span><button id="cClose" aria-label="Close"></button></div>
@@ -359,7 +395,7 @@
   var SUPABASE_URL = "https://fomasnzofymhafhomdux.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_2i35gbEiTyxxSG98TcDRjg_YeHnI3S_";
   var BUCKET = "videos", PAGE = 8, MAX_MB = 50, MAX_CAP = 150, MAX_BIO = 80;
-  var VSELECT = "id,user_id,video_url,caption,views,created_at,profiles!videos_user_id_fkey(username,avatar_url),likes(count),comments(count)";
+  var VSELECT = "id,user_id,video_url,caption,description,views,created_at,profiles!videos_user_id_fkey(username,display_name,avatar_url),likes(count),comments(count)";
 
   /* ---------- icons ---------- */
   var P = {
@@ -390,7 +426,12 @@
     upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>',
     send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
     logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
-    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    repeat: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+    edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    ban: '<circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/>',
+    chev: '<path d="M9 18l6-6-6-6"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
   };
   function svg(name, size) {
     size = size || 22;
@@ -416,19 +457,14 @@
   }
   function cnt(x) { return x && x[0] ? x[0].count : 0; }
   function hue(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
-  function avatar(name, size, url) {
+  function avatar(name, size) {
     name = name || "?";
     var d = el("div", "av", name.charAt(0).toUpperCase());
     d.style.width = d.style.height = size + "px";
     d.style.fontSize = Math.round(size * 0.42) + "px";
-    d.style.background = "linear-gradient(135deg,hsl(" + hue(name) + ",75%,60%),hsl(" + ((hue(name) + 50) % 360) + ",70%,45%))";
-    if (url && /^https:\/\//.test(url)) {
-      var img = document.createElement("img");
-      img.alt = ""; img.src = url; img.loading = "lazy";
-      img.style.cssText = "width:100%;height:100%;border-radius:50%;object-fit:cover;display:block";
-      img.addEventListener("error", function () { img.remove(); d.textContent = name.charAt(0).toUpperCase(); });
-      d.textContent = ""; d.appendChild(img);
-    }
+    var au = AV[name];
+    if (au && /^https:\/\/[^"')\s]+$/.test(au)) { d.textContent = ""; d.style.background = 'center / cover no-repeat url("' + au + '")'; }
+    else d.style.background = "linear-gradient(135deg,hsl(" + hue(name) + ",75%,60%),hsl(" + ((hue(name) + 50) % 360) + ",70%,45%))";
     return d;
   }
   function toast(msg) {
@@ -458,13 +494,17 @@
     }
   } catch (e) { sb = null; }
 
-  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true };
+  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true, reposts: new Set(), blocked: new Set(), requested: new Set() };
   try { if (localStorage.getItem("vibin_muted") === "0") state.muted = false; } catch (e) {}
   var routeId = 0, mainFeed = null, viewerFeed = null, exploreSort = "trending";
 
   function need() { if (!sb) { toast("Not connected to the server yet"); return false; } return true; }
   function needLogin() { if (!state.user) { openModal("login"); return true; } return false; }
   function isMe(uid) { return !!state.user && state.user.id === uid; }
+  function notBlocked(v) { return !state.blocked.has(v.user_id); }
+  var AV = {};
+  function noteAv(p) { if (p && p.username) AV[p.username] = p.avatar_url || null; return 1; }
+  window.vibin = { sb: sb, state: state, av: AV };
 
   /* ---------- navigation ---------- */
   var NAV = [
@@ -494,7 +534,7 @@
   function setNav(key) {
     document.querySelectorAll("[data-nav]").forEach(function (n) { n.classList.toggle("active", n.dataset.nav === key); });
   }
-  var VIEWS = ["feed", "explore", "live", "upload", "profile", "search"];
+  var VIEWS = ["feed", "explore", "live", "upload", "profile", "search", "settings"];
   function showView(name) {
     VIEWS.forEach(function (v) { $("view-" + v).classList.toggle("active", v === name); });
     pauseAll();
@@ -543,9 +583,8 @@
   /* ---------- video data ---------- */
   function norm(r) {
     return {
-      id: r.id, user_id: r.user_id, video_url: r.video_url, caption: r.caption || "", views: r.views || 0,
-      created_at: r.created_at, username: (r.profiles && r.profiles.username) || "user",
-      avatar_url: (r.profiles && r.profiles.avatar_url) || "",
+      id: r.id, user_id: r.user_id, video_url: r.video_url, caption: r.caption || "", description: r.description || "", views: r.views || 0,
+      created_at: r.created_at, username: (r.profiles && r.profiles.username) || "user", display: (r.profiles && r.profiles.display_name) || "", av: noteAv(r.profiles),
       likeCount: cnt(r.likes), commentCount: cnt(r.comments)
     };
   }
@@ -559,7 +598,7 @@
     }
     var r = await q.range(offset, offset + PAGE - 1);
     if (r.error) return { list: [], error: r.error };
-    return { list: (r.data || []).map(norm) };
+    return { list: (r.data || []).map(norm).filter(notBlocked) };
   }
   async function fetchByIds(ids) {
     if (!ids.length) return [];
@@ -597,6 +636,12 @@
   async function toggleFollow(uid) {
     if (needLogin() || !need()) return;
     if (uid === state.user.id) return;
+    if (state.requested.has(uid)) {
+      state.requested.delete(uid); syncFollowUI();
+      var rr = await sb.from("follow_requests").delete().eq("requester_id", state.user.id).eq("target_id", uid);
+      if (rr.error) { state.requested.add(uid); syncFollowUI(); toast("Could not cancel the request"); } else toast("Request cancelled");
+      return;
+    }
     var on = state.following.has(uid);
     if (on) state.following.delete(uid); else state.following.add(uid);
     syncFollowUI(); renderSuggested();
@@ -605,18 +650,22 @@
       : await sb.from("follows").insert({ follower_id: state.user.id, following_id: uid });
     if (r.error) {
       if (on) state.following.add(uid); else state.following.delete(uid);
+      if (!on && /row-level security|policy|42501/i.test((r.error.message || "") + " " + (r.error.code || ""))) {
+        var q = await sb.from("follow_requests").insert({ requester_id: state.user.id, target_id: uid });
+        if (!q.error) { state.requested.add(uid); syncFollowUI(); renderSuggested(); toast("This account is private. Follow request sent"); return; }
+      }
       syncFollowUI(); renderSuggested(); toast("Could not update follow");
     }
   }
   function syncFollowUI() {
     document.querySelectorAll(".plus").forEach(function (p) {
       var uid = p.dataset.uid;
-      p.style.display = (isMe(uid) || state.following.has(uid)) ? "none" : "grid";
+      p.style.display = (isMe(uid) || state.following.has(uid) || state.requested.has(uid)) ? "none" : "grid";
     });
     document.querySelectorAll(".fbtn").forEach(function (b) {
       var on = state.following.has(b.dataset.uid);
-      b.textContent = on ? "Following" : "Follow";
-      b.className = "fbtn btn" + (on ? " ghost" : "");
+      var rq = state.requested.has(b.dataset.uid); b.textContent = on ? "Following" : rq ? "Requested" : "Follow";
+      b.className = "fbtn btn" + (on || rq ? " ghost" : "");
     });
   }
   function shareVideo(v) {
@@ -635,6 +684,75 @@
     if (viewerFeed) { closeViewer(); }
     route();
   }
+  async function toggleRepost(v) {
+    if (needLogin() || !need()) return;
+    var on = state.reposts.has(v.id);
+    var r = on ? await sb.from("reposts").delete().eq("user_id", state.user.id).eq("video_id", v.id)
+               : await sb.from("reposts").insert({ user_id: state.user.id, video_id: v.id });
+    if (r.error) { toast("Could not repost"); return; }
+    if (on) state.reposts.delete(v.id); else state.reposts.add(v.id);
+    toast(on ? "Repost removed" : "Reposted to your profile");
+  }
+  async function blockUser(uid, name) {
+    if (needLogin() || !need() || isMe(uid)) return;
+    if (!confirm("Block @" + name + "? You will stop seeing their videos and comments, and you will no longer be friends.")) return;
+    var r = await sb.rpc("block_user", { target: uid });
+    if (r.error) { toast("Could not block: " + r.error.message); return; }
+    state.blocked.add(uid); state.following.delete(uid); toast("Blocked @" + name); route();
+  }
+  async function unblockUser(uid, name) {
+    var r = await sb.from("blocks").delete().eq("blocker_id", state.user.id).eq("blocked_id", uid);
+    if (r.error) { toast("Could not unblock"); return; }
+    state.blocked.delete(uid); toast("Unblocked @" + name); route();
+  }
+  function editVideo(v) {
+    var ov = el("div", "overlay show"), m = el("div", "modal");
+    var x = el("button", "close", "\u00d7"); x.addEventListener("click", function () { ov.remove(); }); m.appendChild(x);
+    m.appendChild(el("h3", null, "Edit video")); m.appendChild(el("p", "sub", "Change the caption or description. Tag people with @username."));
+    function ta(label, val, max, rows) {
+      var l = el("div", "sub", label); l.style.margin = "8px 0 4px"; m.appendChild(l);
+      var t = document.createElement("textarea"); t.className = "field"; t.maxLength = max; t.rows = rows; t.value = val; t.style.resize = "none"; m.appendChild(t);
+      attachMentions(t); return t;
+    }
+    var cap = ta("Caption", v.caption, MAX_CAP, 3), desc = ta("Description", v.description || "", 500, 4);
+    var save = el("button", "btn", "Save"); save.style.marginTop = "12px"; save.style.width = "100%";
+    save.addEventListener("click", async function () {
+      save.disabled = true;
+      var c = cap.value.trim().slice(0, MAX_CAP), d = desc.value.trim().slice(0, 500);
+      var r = await sb.from("videos").update({ caption: c, description: d }).eq("id", v.id);
+      if (r.error) { save.disabled = false; toast("Could not save: " + r.error.message); return; }
+      v.caption = c; v.description = d; ov.remove(); toast("Video updated"); route();
+    });
+    m.appendChild(save); ov.appendChild(m);
+    ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+  }
+  function attachMentions(inp) {
+    var box = null, t;
+    function close() { if (box) { box.remove(); box = null; } }
+    inp.addEventListener("input", function () {
+      clearTimeout(t);
+      var pos = inp.selectionStart, m = /@([A-Za-z0-9_.]{1,20})$/.exec(inp.value.slice(0, pos));
+      if (!m || !sb) { close(); return; }
+      t = setTimeout(async function () {
+        var r = await sb.from("profiles").select("username,display_name").ilike("username", m[1].replace(/[%_]/g, "") + "%").limit(5);
+        close(); if (!r.data || !r.data.length) return;
+        box = el("div", "mention"); var rc = inp.getBoundingClientRect();
+        box.style.left = rc.left + "px"; box.style.bottom = (innerHeight - rc.top + 4) + "px"; box.style.minWidth = Math.min(rc.width, 260) + "px";
+        r.data.forEach(function (p) {
+          var b = el("button", null, "@" + p.username + (p.display_name ? "  " + p.display_name : "")); b.type = "button";
+          b.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            inp.value = inp.value.slice(0, pos - m[0].length) + "@" + p.username + " " + inp.value.slice(pos);
+            close(); inp.focus();
+          });
+          box.appendChild(b);
+        });
+        document.body.appendChild(box);
+      }, 180);
+    });
+    inp.addEventListener("blur", function () { setTimeout(close, 150); });
+  }
   function closeMenus() { document.querySelectorAll(".menu").forEach(function (m) { m.remove(); }); }
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".menu") && !e.target.closest(".morebtn")) closeMenus();
@@ -642,12 +760,16 @@
   });
 
   /* ---------- the feed engine ---------- */
-  function buildCaption(text) {
-    var c = el("div", "cap");
-    text.split(/(#[\p{L}\p{N}_]+)/u).forEach(function (part) {
+  function buildCaption(text, cls) {
+    var c = el("div", cls || "cap");
+    text.split(/(#[\p{L}\p{N}_]+|@[A-Za-z0-9_.]{2,20})/u).forEach(function (part) {
       if (!part) return;
       if (part.charAt(0) === "#" && part.length > 1) {
         var a = el("a", null, part); a.href = "#/search/" + encodeURIComponent(part); c.appendChild(a);
+      } else if (part.charAt(0) === "@" && part.length > 2) {
+        var u = part.replace(/\.+$/, "");
+        var l = el("a", null, u); l.href = "#/u/" + encodeURIComponent(u.slice(1).toLowerCase()); c.appendChild(l);
+        if (u.length < part.length) c.appendChild(document.createTextNode(part.slice(u.length)));
       } else c.appendChild(document.createTextNode(part));
     });
     return c;
@@ -672,13 +794,16 @@
     screen.appendChild(mute); screen.appendChild(more);
 
     var meta = el("div", "meta");
-    var un = el("a", "un", "@" + v.username); un.href = "#/u/" + encodeURIComponent(v.username);
+    var un = el("a", "un", v.display ? v.display + " (@" + v.username + ")" : "@" + v.username); un.href = "#/u/" + encodeURIComponent(v.username);
     meta.appendChild(un); meta.appendChild(el("span", "when", ago(v.created_at)));
-    if (v.caption) {
-      var cap = buildCaption(v.caption); meta.appendChild(cap);
-      if (v.caption.length > 70) {
+    if (v.caption || v.description) {
+      var caps = [];
+      if (v.caption) caps.push(buildCaption(v.caption));
+      if (v.description) { var dd = buildCaption(v.description); dd.style.opacity = ".85"; caps.push(dd); }
+      caps.forEach(function (c) { meta.appendChild(c); });
+      if (v.caption.length + v.description.length > 70 || caps.length > 1) {
         var mt = el("button", "moretxt", "more");
-        mt.addEventListener("click", function (e) { e.stopPropagation(); var o = cap.classList.toggle("open"); mt.textContent = o ? "less" : "more"; });
+        mt.addEventListener("click", function (e) { e.stopPropagation(); var o = false; caps.forEach(function (c) { o = c.classList.toggle("open"); }); mt.textContent = o ? "less" : "more"; });
         meta.appendChild(mt);
       }
     }
@@ -701,7 +826,7 @@
     /* right rail */
     var rail = el("div", "rail"); stage.appendChild(rail);
     var avw = el("a", "avwrap"); avw.href = "#/u/" + encodeURIComponent(v.username);
-    avw.appendChild(avatar(v.username, 48, v.avatar_url));
+    avw.appendChild(avatar(v.username, 48));
     var plus = el("button", "plus"); plus.dataset.uid = v.user_id; plus.setAttribute("aria-label", "Follow"); plus.innerHTML = svg("add", 14);
     plus.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); toggleFollow(v.user_id); });
     avw.appendChild(plus); rail.appendChild(avw);
@@ -733,7 +858,15 @@
       var b1 = el("button"); b1.innerHTML = svg("link", 18) + "<span>Copy link</span>";
       b1.addEventListener("click", function () { closeMenus(); shareVideo(v); });
       m.appendChild(b1);
+      if (!isMe(v.user_id)) {
+        var br = el("button"); br.innerHTML = svg("repeat", 18) + "<span>" + (state.reposts.has(v.id) ? "Undo repost" : "Repost") + "</span>";
+        br.addEventListener("click", function () { closeMenus(); toggleRepost(v); }); m.appendChild(br);
+        var bb = el("button", "danger"); bb.innerHTML = svg("ban", 18) + "<span>Block @" + v.username + "</span>";
+        bb.addEventListener("click", function () { closeMenus(); blockUser(v.user_id, v.username); }); m.appendChild(bb);
+      }
       if (isMe(v.user_id)) {
+        var be = el("button"); be.innerHTML = svg("edit", 18) + "<span>Edit video</span>";
+        be.addEventListener("click", function () { closeMenus(); editVideo(v); }); m.appendChild(be);
         var b2 = el("button", "danger"); b2.innerHTML = svg("trash", 18) + "<span>Delete video</span>";
         b2.addEventListener("click", function () { closeMenus(); deleteVideo(v); });
         m.appendChild(b2);
@@ -848,10 +981,17 @@
 
   /* ---------- comments ---------- */
   var cv = null;
+  var CSEL = "id,body,created_at,user_id,parent_id,profiles!comments_user_id_fkey(username,display_name,avatar_url)";
   function closeComments() { $("cpanel").classList.remove("show"); cv = null; }
+  function setReply(r) {
+    cv.reply = r;
+    var inp = $("cInput");
+    inp.placeholder = r ? "Reply to @" + r.name + "..." : "Add a comment...";
+    if (r) { inp.value = "@" + r.name + " "; inp.focus(); }
+  }
   async function openComments(v, onCount) {
     closeMenus();
-    cv = { v: v, onCount: onCount };
+    cv = { v: v, onCount: onCount, rows: [], likes: {}, mine: new Set(), reply: null, open: new Set() };
     $("cpanel").classList.add("show");
     $("cTitle").textContent = "Comments";
     var list = $("clist"); list.textContent = ""; list.appendChild(el("div", "cmuted", "Loading..."));
@@ -859,29 +999,74 @@
     $("cInput").placeholder = state.user ? "Add a comment..." : "Log in to comment";
     $("cInput").value = "";
     if (!sb) return;
-    var r = await sb.from("comments").select("id,body,created_at,user_id,profiles!comments_user_id_fkey(username,avatar_url)").eq("video_id", v.id).order("created_at", { ascending: false }).limit(100);
+    var r = await sb.from("comments").select(CSEL).eq("video_id", v.id).order("created_at", { ascending: true }).limit(300);
     if (!cv || cv.v !== v) return;
-    list.textContent = "";
-    if (r.error) { list.appendChild(el("div", "cmuted", "Could not load comments")); return; }
-    if (!r.data.length) { list.appendChild(el("div", "cmuted", "No comments yet. Be the first!")); }
-    r.data.forEach(function (c) { list.appendChild(commentRow(c)); });
-    $("cTitle").textContent = fmt(v.commentCount) + " comments";
+    if (r.error) { list.textContent = ""; list.appendChild(el("div", "cmuted", "Could not load comments")); return; }
+    cv.rows = (r.data || []).filter(function (c) { return !state.blocked.has(c.user_id); });
+    var ids = cv.rows.map(function (c) { return c.id; });
+    if (ids.length) {
+      var lk = await sb.from("comment_likes").select("comment_id,user_id").in("comment_id", ids);
+      if (!cv || cv.v !== v) return;
+      (lk.data || []).forEach(function (x) { cv.likes[x.comment_id] = (cv.likes[x.comment_id] || 0) + 1; if (isMe(x.user_id)) cv.mine.add(x.comment_id); });
+    }
+    renderComments();
   }
-  function commentRow(c) {
-    var name = (c.profiles && c.profiles.username) || "user";
-    var row = el("div", "cm");
-    var a = el("a"); a.href = "#/u/" + encodeURIComponent(name); a.appendChild(avatar(name, 36, c.profiles && c.profiles.avatar_url)); row.appendChild(a);
+  function renderComments() {
+    var list = $("clist"), keep = list.scrollTop; list.textContent = "";
+    var rows = cv.rows, kids = {};
+    if (!rows.length) list.appendChild(el("div", "cmuted", "No comments yet. Be the first!"));
+    rows.forEach(function (c) { if (c.parent_id) (kids[c.parent_id] = kids[c.parent_id] || []).push(c); });
+    rows.filter(function (c) { return !c.parent_id; }).reverse().forEach(function (c) {
+      list.appendChild(commentRow(c, false));
+      var k = kids[c.id] || [];
+      if (!k.length) return;
+      var open = cv.open.has(c.id);
+      var t = el("button", "showrep", open ? "Hide replies" : "Show " + k.length + (k.length === 1 ? " reply" : " replies"));
+      t.addEventListener("click", function () { if (open) cv.open.delete(c.id); else cv.open.add(c.id); renderComments(); });
+      list.appendChild(t);
+      if (open) k.forEach(function (r) { list.appendChild(commentRow(r, true)); });
+    });
+    list.scrollTop = keep;
+    $("cTitle").textContent = fmt(cv.v.commentCount) + " comments";
+  }
+  function commentRow(c, isRep) {
+    var name = (c.profiles && c.profiles.username) || "user", shown = (c.profiles && c.profiles.display_name) || name; noteAv(c.profiles);
+    var row = el("div", "cm" + (isRep ? " rep" : ""));
+    var a = el("a"); a.href = "#/u/" + encodeURIComponent(name); a.appendChild(avatar(name, isRep ? 28 : 36)); row.appendChild(a);
     var body = el("div", "body");
-    body.appendChild(el("div", "who", name));
-    body.appendChild(el("div", "txt", c.body));
-    body.appendChild(el("div", "when", ago(c.created_at)));
-    row.appendChild(body);
+    body.appendChild(el("div", "who", shown));
+    body.appendChild(buildCaption(c.body, "txt"));
+    var acts = el("div", "acts"); acts.appendChild(el("span", "when", ago(c.created_at)));
+    var rb = el("button", null, "Reply");
+    rb.addEventListener("click", function () { if (needLogin()) return; setReply({ id: c.parent_id || c.id, name: name }); });
+    acts.appendChild(rb); body.appendChild(acts); row.appendChild(body);
+
+    var lk = el("button", "lk"); lk.setAttribute("aria-label", "Like comment");
+    function paint() { var n = cv ? (cv.likes[c.id] || 0) : 0; lk.classList.toggle("on", !!cv && cv.mine.has(c.id)); lk.innerHTML = svg("heart", 18) + "<span>" + (n ? fmt(n) : "") + "</span>"; }
+    function flip() {
+      if (cv.mine.has(c.id)) { cv.mine.delete(c.id); cv.likes[c.id] = Math.max(0, (cv.likes[c.id] || 1) - 1); }
+      else { cv.mine.add(c.id); cv.likes[c.id] = (cv.likes[c.id] || 0) + 1; }
+      paint();
+    }
+    paint();
+    lk.addEventListener("click", async function () {
+      if (needLogin() || !need() || !cv) return;
+      var on = cv.mine.has(c.id); flip();
+      var r = on ? await sb.from("comment_likes").delete().eq("user_id", state.user.id).eq("comment_id", c.id)
+                 : await sb.from("comment_likes").insert({ user_id: state.user.id, comment_id: c.id });
+      if (r.error && cv) { flip(); toast("Could not like comment"); }
+    });
+    row.appendChild(lk);
+
     if (cv && (isMe(c.user_id) || isMe(cv.v.user_id))) {
       var d = el("button", "del"); d.setAttribute("aria-label", "Delete comment"); d.innerHTML = svg("trash", 16);
       d.addEventListener("click", async function () {
         var r = await sb.from("comments").delete().eq("id", c.id);
         if (r.error) { toast("Could not delete comment"); return; }
-        row.remove(); if (cv) { cv.v.commentCount = Math.max(0, cv.v.commentCount - 1); cv.onCount(); $("cTitle").textContent = fmt(cv.v.commentCount) + " comments"; }
+        if (!cv) return;
+        var gone = cv.rows.filter(function (x) { return x.id === c.id || x.parent_id === c.id; }).length;
+        cv.rows = cv.rows.filter(function (x) { return x.id !== c.id && x.parent_id !== c.id; });
+        cv.v.commentCount = Math.max(0, cv.v.commentCount - gone); cv.onCount(); renderComments();
       });
       row.appendChild(d);
     }
@@ -890,20 +1075,18 @@
   $("cClose").innerHTML = svg("x", 20); $("cSend").innerHTML = svg("send", 20);
   $("cClose").addEventListener("click", closeComments);
   $("cInput").addEventListener("focus", function () { if (!state.user) { this.blur(); openModal("login"); } });
+  attachMentions($("cInput"));
   $("cForm").addEventListener("submit", async function (e) {
     e.preventDefault();
     if (needLogin() || !cv || !need()) return;
     var text = $("cInput").value.trim(); if (!text) return;
     $("cSend").disabled = true;
-    var v = cv.v;
-    var r = await sb.from("comments").insert({ video_id: v.id, user_id: state.user.id, body: text.slice(0, 300) })
-      .select("id,body,created_at,user_id,profiles!comments_user_id_fkey(username,avatar_url)").single();
+    var v = cv.v, reply = cv.reply;
+    var r = await sb.from("comments").insert({ video_id: v.id, user_id: state.user.id, body: text.slice(0, 300), parent_id: reply ? reply.id : null }).select(CSEL).single();
     $("cSend").disabled = false;
     if (r.error) { toast("Could not post comment"); return; }
     if (!cv || cv.v !== v) return;
-    var list = $("clist"); var empty = list.querySelector(".cmuted"); if (empty) empty.remove();
-    list.insertBefore(commentRow(r.data), list.firstChild);
-    $("cInput").value = ""; v.commentCount++; cv.onCount(); $("cTitle").textContent = fmt(v.commentCount) + " comments";
+    cv.rows.push(r.data); if (reply) cv.open.add(reply.id); v.commentCount++; cv.onCount(); setReply(null); $("cInput").value = ""; renderComments();
   });
 
   /* ---------- viewer (open a video from a grid) ---------- */
@@ -989,7 +1172,7 @@
     var r = await q.limit(40);
     if (my !== routeId) return;
     if (r.error) { if (isSetupError(r.error)) return setupNeeded(box); return emptyState(box, "compass", "Could not load videos", r.error.message); }
-    var list = (r.data || []).map(norm);
+    var list = (r.data || []).map(norm).filter(notBlocked);
     box.textContent = "";
     var page = el("div", "page"); box.appendChild(page);
     page.appendChild(el("h1", null, "Explore"));
@@ -1028,7 +1211,7 @@
     ]);
     if (my !== routeId) return;
     if (res[0].error && isSetupError(res[0].error)) return setupNeeded(box);
-    var accts = res[0].data || [], vids = (res[1].data || []).map(norm);
+    var accts = res[0].data || [], vids = (res[1].data || []).map(norm).filter(notBlocked); accts.forEach(noteAv);
     box.textContent = "";
     var page = el("div", "page"); box.appendChild(page);
     page.appendChild(el("h1", null, 'Results for "' + q + '"'));
@@ -1036,7 +1219,7 @@
       page.appendChild(el("div", "section-h", "Accounts"));
       accts.forEach(function (a) {
         var row = el("a", "acct"); row.href = "#/u/" + encodeURIComponent(a.username);
-        row.appendChild(avatar(a.username, 44, a.avatar_url));
+        row.appendChild(avatar(a.username, 44));
         var t = el("div"); t.appendChild(el("b", null, a.username));
         if (a.bio) { var bi = el("div", null, a.bio); bi.style.color = "var(--muted)"; bi.style.fontSize = ".85rem"; t.appendChild(bi); }
         row.appendChild(t); page.appendChild(row);
@@ -1098,6 +1281,10 @@
     var cap = document.createElement("textarea"); cap.maxLength = MAX_CAP; cap.placeholder = "Say something about your video... use #hashtags"; form.appendChild(cap);
     var counter = el("div", "counter", "0 / " + MAX_CAP); form.appendChild(counter);
     cap.addEventListener("input", function () { counter.textContent = cap.value.length + " / " + MAX_CAP; });
+    form.appendChild(el("label", null, "Description (optional)"));
+    var desc = document.createElement("textarea"); desc.maxLength = 500; desc.style.height = "90px";
+    desc.placeholder = "Add more details. Tag people with @username"; form.appendChild(desc);
+    attachMentions(cap); attachMentions(desc);
     var prog = el("div"); prog.hidden = true; var bar = el("div", "prog"), fill = document.createElement("i"); bar.appendChild(fill); prog.appendChild(bar);
     var ptxt = el("div", "counter", "Uploading 0%"); ptxt.style.textAlign = "left"; ptxt.style.marginTop = "6px"; prog.appendChild(ptxt); form.appendChild(prog);
     var btns = el("div"); btns.style.display = "flex"; btns.style.gap = "10px";
@@ -1129,7 +1316,7 @@
         var path = state.user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
         await uploadFile(path, file, function (p) { fill.style.width = p + "%"; ptxt.textContent = p < 100 ? "Uploading " + p + "%" : "Finishing up..."; });
         var url = SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/" + path;
-        var ins = await sb.from("videos").insert({ user_id: state.user.id, video_url: url, caption: cap.value.trim().slice(0, MAX_CAP) });
+        var ins = await sb.from("videos").insert({ user_id: state.user.id, video_url: url, caption: cap.value.trim().slice(0, MAX_CAP), description: desc.value.trim().slice(0, 500) });
         if (ins.error) throw new Error(isSetupError(ins.error) ? "Database is not set up yet. Run setup.sql in Supabase." : ins.error.message);
         toast("Posted!"); go("#/u/" + encodeURIComponent(state.user.name));
       } catch (e) {
@@ -1149,11 +1336,11 @@
     setNav(state.user && username.toLowerCase() === state.user.name.toLowerCase() ? "me" : "");
     loading(box);
     if (!sb) return emptyState(box, "user", "Not connected", "");
-    var pr = await sb.from("profiles").select("id,username,bio,avatar_url,created_at").eq("username", username.toLowerCase()).maybeSingle();
+    var pr = await sb.from("profiles").select("id,username,display_name,bio,is_private,avatar_url,created_at").eq("username", username.toLowerCase()).maybeSingle();
     if (my !== routeId) return;
     if (pr.error) { if (isSetupError(pr.error)) return setupNeeded(box); return emptyState(box, "user", "Could not load profile", pr.error.message); }
     if (!pr.data) return emptyState(box, "user", "Account not found", "We could not find @" + username + ".", "Go home", function () { go("#/foryou"); });
-    var p = pr.data, own = isMe(p.id);
+    var p = pr.data, own = isMe(p.id); noteAv(p);
     var cs = await Promise.all([
       sb.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", p.id),
       sb.from("follows").select("*", { count: "exact", head: true }).eq("following_id", p.id),
@@ -1166,17 +1353,14 @@
     box.textContent = "";
     var page = el("div", "page"); box.appendChild(page);
     var head = el("div", "phead"); page.appendChild(head);
-    var headAv = el("div"); headAv.style.flex = "none"; headAv.appendChild(avatar(p.username, 110, p.avatar_url)); head.appendChild(headAv);
+    head.appendChild(avatar(p.username, 110));
     var info = el("div", "pinfo"); head.appendChild(info);
-    info.appendChild(el("h1", null, "@" + p.username));
+    var h1 = el("h1", null, p.display_name || p.username); h1.dataset.u = p.username; info.appendChild(h1);
+    if (p.display_name) { var unl = el("div", null, "@" + p.username); unl.style.cssText = "color:var(--muted);margin:-4px 0 6px"; info.appendChild(unl); }
     var btns = el("div", "pbtns"); info.appendChild(btns);
     if (own) {
-      var eb = el("button", "btn ghost", "Edit profile"); eb.addEventListener("click", function () {
-        editBio(p, function (nb, newAvatar) {
-          p.bio = nb; bioEl.textContent = nb; bioEl.hidden = !nb;
-          if (newAvatar !== undefined) { p.avatar_url = newAvatar; headAv.textContent = ""; headAv.appendChild(avatar(p.username, 110, newAvatar)); }
-        });
-      }); btns.appendChild(eb);
+      var eb = el("button", "btn ghost", "Edit profile"); eb.addEventListener("click", function () { editBio(p); }); btns.appendChild(eb);
+      var sg = el("button", "btn line", "Settings"); sg.addEventListener("click", function () { go("#/settings"); }); btns.appendChild(sg);
     } else {
       var fb = el("button", "fbtn btn", "Follow"); fb.dataset.uid = p.id;
       fb.addEventListener("click", async function () {
@@ -1186,17 +1370,20 @@
         if (now !== was) { followersN += now ? 1 : -1; fol.textContent = fmt(followersN); }
       });
       btns.appendChild(fb);
+      var bk = el("button", "btn line", state.blocked.has(p.id) ? "Unblock" : "Block");
+      bk.addEventListener("click", function () { if (state.blocked.has(p.id)) unblockUser(p.id, p.username); else blockUser(p.id, p.username); });
+      btns.appendChild(bk);
     }
     var stats = el("div", "stats"); info.appendChild(stats);
     var fol;
     function stat(n, label) { var s = el("div"); var b = el("b", null, fmt(n)); s.appendChild(b); s.appendChild(el("span", null, label)); stats.appendChild(s); return b; }
     stat(followingN, "Following"); fol = stat(followersN, "Followers"); stat(likesN, "Likes");
-    var bioEl = el("div", "bio", p.bio || ""); bioEl.hidden = !p.bio; info.appendChild(bioEl);
+    var bioEl = buildCaption(p.bio || "", "bio"); bioEl.hidden = !p.bio; info.appendChild(bioEl);
     syncFollowUI();
 
     var tabs = el("div", "tabs"); page.appendChild(tabs);
     var gridBox = el("div"); page.appendChild(gridBox);
-    var defs = [["videos", "Videos"]];
+    var defs = [["videos", "Videos"], ["reposts", "Reposts"]];
     if (own) { defs.push(["liked", "Liked"]); defs.push(["saved", "Saved"]); }
     var tabBtns = {};
     defs.forEach(function (d) {
@@ -1204,6 +1391,13 @@
       b.addEventListener("click", function () { loadTab(d[0]); });
     });
     async function loadTab(tab) {
+      if (p.is_private && !own && !state.following.has(p.id)) {
+        Object.keys(tabBtns).forEach(function (k) { tabBtns[k].classList.toggle("active", k === tab); });
+        gridBox.textContent = "";
+        var pv = el("div", "center"); pv.style.minHeight = "260px"; pv.appendChild(iconEl("lock", 48, "bigico"));
+        pv.appendChild(el("b", null, "This account is private")); pv.appendChild(el("p", null, "Follow this account to see their videos."));
+        gridBox.appendChild(pv); return;
+      }
       Object.keys(tabBtns).forEach(function (k) { tabBtns[k].classList.toggle("active", k === tab); });
       loading(gridBox);
       var list = [];
@@ -1211,14 +1405,14 @@
         var r = await sb.from("videos").select(VSELECT).eq("user_id", p.id).order("created_at", { ascending: false }).limit(60);
         list = (r.data || []).map(norm);
       } else {
-        var tbl = tab === "liked" ? "likes" : "saves";
+        var tbl = tab === "liked" ? "likes" : tab === "reposts" ? "reposts" : "saves";
         var ids = await sb.from(tbl).select("video_id").eq("user_id", p.id).order("created_at", { ascending: false }).limit(60);
         list = await fetchByIds((ids.data || []).map(function (x) { return x.video_id; }));
       }
       if (my !== routeId) return;
       gridBox.textContent = "";
       if (!list.length) {
-        var msg = tab === "videos" ? (own ? "You have not posted anything yet." : "No videos yet.") : tab === "liked" ? "Videos you like will show up here." : "Videos you save will show up here.";
+        var msg = tab === "videos" ? (own ? "You have not posted anything yet." : "No videos yet.") : tab === "liked" ? "Videos you like will show up here." : tab === "reposts" ? "Reposted videos will show up here." : "Videos you save will show up here.";
         var e = el("div", "center"); e.style.minHeight = "260px"; e.appendChild(iconEl(tab === "videos" ? "video" : tab === "liked" ? "heart" : "bookmark", 48, "bigico")); e.appendChild(el("p", null, msg));
         if (tab === "videos" && own) { var ub = el("button", "btn", "Upload a video"); ub.addEventListener("click", function () { go("#/upload"); }); e.appendChild(ub); }
         gridBox.appendChild(e); return;
@@ -1228,79 +1422,269 @@
     loadTab("videos");
   }
 
-  function editBio(p, done) {
+  function squarePic(file, size) {
+    return new Promise(function (res, rej) {
+      var img = new Image(), u = URL.createObjectURL(file);
+      img.onload = function () {
+        var c = document.createElement("canvas"); c.width = c.height = size;
+        var s = Math.min(img.width, img.height);
+        c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+        URL.revokeObjectURL(u); c.toBlob(function (b) { b ? res(b) : rej(new Error("failed")); }, "image/jpeg", 0.85);
+      };
+      img.onerror = function () { rej(new Error("Not an image")); }; img.src = u;
+    });
+  }
+  function editBio(p) {
     var ov = el("div", "overlay show"), m = el("div", "modal");
     var x = el("button", "close", "\u00d7"); x.addEventListener("click", function () { ov.remove(); }); m.appendChild(x);
-    m.appendChild(el("h3", null, "Edit profile")); m.appendChild(el("p", "sub", "Change your photo and tell people a bit about you."));
-
-    /* profile picture */
-    var newFile = null, removeAvatar = false, previewUrl = null;
-    var avRow = el("div"); avRow.style.cssText = "display:flex;align-items:center;gap:16px;margin-bottom:16px";
-    var avBox = el("div"); avBox.style.flex = "none";
-    function drawAv(url) { avBox.textContent = ""; avBox.appendChild(avatar(p.username, 84, url)); }
-    drawAv(p.avatar_url);
-    avRow.appendChild(avBox);
-    var avBtns = el("div"); avBtns.style.cssText = "display:flex;flex-direction:column;gap:8px;align-items:flex-start";
-    var chooseBtn = el("button", "btn sm ghost", "Change photo");
-    var removeBtn = el("button", "btn sm line", "Remove photo"); removeBtn.hidden = !p.avatar_url;
-    var fileIn = document.createElement("input"); fileIn.type = "file"; fileIn.accept = "image/png,image/jpeg,image/webp,image/gif"; fileIn.hidden = true;
-    chooseBtn.addEventListener("click", function () { fileIn.click(); });
-    fileIn.addEventListener("change", function () {
-      var f = fileIn.files[0]; if (!f) return;
-      if (!/^image\//.test(f.type)) { toast("Please choose an image"); return; }
-      if (f.size > 5 * 1024 * 1024) { toast("That image is over 5 MB"); return; }
-      newFile = f; removeAvatar = false;
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      previewUrl = URL.createObjectURL(f);
-      avBox.textContent = ""; var d = avatar(p.username, 84); d.textContent = "";
-      var im = document.createElement("img"); im.src = previewUrl; im.alt = "";
-      im.style.cssText = "width:100%;height:100%;border-radius:50%;object-fit:cover;display:block";
-      d.appendChild(im); avBox.appendChild(d); removeBtn.hidden = false;
+    m.appendChild(el("h3", null, "Edit profile")); m.appendChild(el("p", "sub", "Change how you show up on vibin."));
+    var pr = el("div"); pr.style.cssText = "display:flex;align-items:center;gap:14px;margin:6px 0 4px";
+    var holder = el("div");
+    function paintAv() { holder.textContent = ""; holder.appendChild(avatar(p.username, 72)); }
+    paintAv();
+    var col = el("div"); col.style.cssText = "display:flex;flex-direction:column;gap:6px";
+    var chg = el("button", "btn sm", "Change photo"), rm = el("button", "btn sm ghost", "Remove photo");
+    var fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/*"; fi.hidden = true;
+    chg.addEventListener("click", function () { fi.click(); });
+    fi.addEventListener("change", async function () {
+      var f = fi.files[0]; fi.value = ""; if (!f) return;
+      if (!/^image\//.test(f.type)) { toast("Please choose a picture"); return; }
+      chg.disabled = true; chg.textContent = "Uploading...";
+      try {
+        var blob = await squarePic(f, 320);
+        var path = state.user.id + "/avatar-" + Date.now() + ".jpg";
+        var up = await sb.storage.from("avatars").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        if (up.error) throw up.error;
+        var url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+        var ur = await sb.from("profiles").update({ avatar_url: url }).eq("id", state.user.id);
+        if (ur.error) throw ur.error;
+        p.avatar_url = url; AV[p.username] = url; paintAv(); renderAuthArea(); toast("Profile picture updated");
+      } catch (e) { toast("Could not update the picture. Run avatars.sql first."); }
+      chg.disabled = false; chg.textContent = "Change photo";
     });
-    removeBtn.addEventListener("click", function () {
-      newFile = null; removeAvatar = true; fileIn.value = ""; drawAv(""); removeBtn.hidden = true;
+    rm.addEventListener("click", async function () {
+      var rr = await sb.from("profiles").update({ avatar_url: null }).eq("id", state.user.id);
+      if (rr.error) { toast("Could not remove the picture"); return; }
+      p.avatar_url = null; AV[p.username] = null; paintAv(); renderAuthArea(); toast("Picture removed");
     });
-    avBtns.appendChild(chooseBtn); avBtns.appendChild(removeBtn); avBtns.appendChild(fileIn);
-    avRow.appendChild(avBtns); m.appendChild(avRow);
-
-    var ta = document.createElement("textarea"); ta.className = "field"; ta.maxLength = MAX_BIO; ta.rows = 3; ta.value = p.bio || ""; ta.style.resize = "none"; m.appendChild(ta);
-    var c = el("div", "counter", ta.value.length + " / " + MAX_BIO); ta.addEventListener("input", function () { c.textContent = ta.value.length + " / " + MAX_BIO; }); m.appendChild(c);
-    var save = el("button", "btn", "Save"); save.style.marginTop = "12px"; save.style.width = "100%";
+    col.appendChild(chg); col.appendChild(rm); pr.appendChild(holder); pr.appendChild(col); pr.appendChild(fi); m.appendChild(pr);
+    function fld(label, node) { var l = el("div", "sub", label); l.style.margin = "10px 0 4px"; m.appendChild(l); node.className = "field"; m.appendChild(node); return node; }
+    var dn = document.createElement("input"); dn.maxLength = 30; dn.value = p.display_name || ""; dn.placeholder = "Display name"; fld("Display name", dn);
+    var un = document.createElement("input"); un.maxLength = 20; un.value = p.username; fld("Username", un);
+    var ta = document.createElement("textarea"); ta.maxLength = MAX_BIO; ta.rows = 3; ta.value = p.bio || ""; ta.style.resize = "none"; fld("Bio (tag people with @username)", ta);
+    attachMentions(ta);
+    var err = el("div", "error"); err.style.marginTop = "8px"; m.appendChild(err);
+    var save = el("button", "btn", "Save"); save.style.marginTop = "6px"; save.style.width = "100%";
     save.addEventListener("click", async function () {
-      save.disabled = true; save.textContent = "Saving...";
-      var nb = ta.value.trim().slice(0, MAX_BIO);
-      var upd = { bio: nb }, newUrl;
-      if (newFile) {
-        var ext = (newFile.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "png";
-        var path = state.user.id + "/" + Date.now() + "." + ext;
-        var up = await sb.storage.from("avatars").upload(path, newFile, { contentType: newFile.type, cacheControl: "3600", upsert: false });
-        if (up.error) {
-          save.disabled = false; save.textContent = "Save";
-          toast(/Bucket not found/i.test(up.error.message || "") ? "Run avatars.sql in Supabase first" : "Could not upload photo");
-          return;
-        }
-        newUrl = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-        upd.avatar_url = newUrl;
-      } else if (removeAvatar) { newUrl = ""; upd.avatar_url = null; }
+      var nu = un.value.trim().toLowerCase();
+      if (!/^[a-z0-9_.]{2,20}$/.test(nu)) { err.textContent = "Username: 2 to 20 letters, numbers, _ or ."; return; }
+      var upd = { bio: ta.value.trim().slice(0, MAX_BIO), display_name: dn.value.trim().slice(0, 30) || null };
+      if (nu !== p.username) upd.username = nu;
+      save.disabled = true; err.textContent = "";
       var r = await sb.from("profiles").update(upd).eq("id", state.user.id);
-      if (r.error) {
-        save.disabled = false; save.textContent = "Save";
-        toast(/avatar_url/i.test(r.error.message || "") ? "Run avatars.sql in Supabase first" : "Could not save");
-        return;
-      }
-      /* tidy up the old picture file */
-      if (newUrl !== undefined && p.avatar_url) {
-        var old = p.avatar_url.split("/object/public/avatars/")[1];
-        if (old) sb.storage.from("avatars").remove([decodeURIComponent(old)]).then(function () {}, function () {});
-      }
-      state.user.bio = nb;
-      if (newUrl !== undefined) { state.user.avatar = newUrl; renderAuthArea(); }
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      ov.remove(); done(nb, newUrl); toast("Profile updated");
+      if (r.error) { save.disabled = false; err.textContent = /duplicate|unique/i.test(r.error.message || "") ? "That username is taken" : "Could not save: " + r.error.message; return; }
+      state.user.name = nu; state.user.bio = upd.bio; AV[nu] = p.avatar_url || null; ov.remove(); renderAuthArea(); toast("Profile updated");
+      go("#/u/" + encodeURIComponent(nu));
     });
     m.appendChild(save); ov.appendChild(m);
     ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
     document.body.appendChild(ov);
+  }
+
+  /* ---------- settings ---------- */
+  var ACCTS_KEY = "vibin_accounts";
+  function getAccts() { try { return JSON.parse(localStorage.getItem(ACCTS_KEY) || "[]"); } catch (e) { return []; } }
+  function putAccts(a) { try { localStorage.setItem(ACCTS_KEY, JSON.stringify(a)); } catch (e) {} }
+  function saveAcct(session, name) {
+    if (!session || !session.user || !session.refresh_token) return;
+    var a = getAccts(), i = -1;
+    a.forEach(function (x, n) { if (x.id === session.user.id) i = n; });
+    var rec = { id: session.user.id, name: name || (i >= 0 && a[i].name) || fallbackName(session.user), access_token: session.access_token, refresh_token: session.refresh_token };
+    if (i >= 0) a[i] = rec; else a.push(rec);
+    putAccts(a);
+  }
+  function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem("vibin_theme", t); } catch (e) {} }
+  function popup(title, sub) {
+    var ov = el("div", "overlay show"), m = el("div", "modal");
+    var x = el("button", "close", "\u00d7"); x.addEventListener("click", function () { ov.remove(); }); m.appendChild(x);
+    m.appendChild(el("h3", null, title)); if (sub) m.appendChild(el("p", "sub", sub));
+    ov.appendChild(m); ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+    return { m: m, close: function () { ov.remove(); } };
+  }
+  function setSec(page, title) { page.appendChild(el("div", "section-h", title)); var b = el("div", "setbox"); page.appendChild(b); return b; }
+  function chev() { return iconEl("chev", 18); }
+  function srow(box, label, sub, right, onClick, danger) {
+    var r = el(onClick ? "button" : "div", "srow" + (danger ? " danger" : ""));
+    var t = el("div", "st"); t.appendChild(el("div", "sl", label)); if (sub) t.appendChild(el("div", "ss", sub)); r.appendChild(t);
+    if (right) r.appendChild(typeof right === "string" ? el("span", "sv", right) : right);
+    if (onClick) r.addEventListener("click", onClick);
+    box.appendChild(r); return r;
+  }
+  function tgl(on, fn) {
+    var b = el("button", "tgl" + (on ? " on" : "")); b.type = "button"; b.appendChild(document.createElement("i"));
+    b.addEventListener("click", async function () {
+      var nv = !b.classList.contains("on"); b.classList.toggle("on", nv);
+      var ok = await fn(nv); if (ok === false) b.classList.toggle("on", !nv);
+    });
+    return b;
+  }
+  function sel(opts, val, fn) {
+    var s = document.createElement("select");
+    opts.forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; s.appendChild(op); });
+    s.value = val; s.addEventListener("change", function () { fn(s.value); }); return s;
+  }
+  async function setProfile(upd) {
+    var r = await sb.from("profiles").update(upd).eq("id", state.user.id);
+    if (r.error) { toast("Could not save: " + r.error.message); return false; }
+    toast("Saved"); return true;
+  }
+  async function pageSettings() {
+    var my = ++routeId; showView("settings"); setNav("");
+    var box = $("view-settings");
+    if (!state.user) return emptyState(box, "user", "Settings", "Log in to manage your account.", "Log in", function () { openModal("login"); });
+    if (!sb) return emptyState(box, "user", "Not connected", "");
+    loading(box);
+    var pr = await sb.from("profiles").select("id,username,display_name,bio,is_private,avatar_url,who_can_message,who_can_comment").eq("id", state.user.id).maybeSingle();
+    if (my !== routeId) return;
+    if (pr.error || !pr.data) return emptyState(box, "lock", "Settings are not set up yet", "Run settings.sql in the Supabase SQL editor, then refresh this page.");
+    var p = pr.data;
+    var rq = await sb.from("follow_requests").select("requester_id").eq("target_id", state.user.id);
+    if (my !== routeId) return;
+    var nReq = (rq.data || []).length;
+    box.textContent = "";
+    var page = el("div", "page"); page.style.maxWidth = "640px"; box.appendChild(page);
+    page.appendChild(el("h1", null, "Settings"));
+    var s = setSec(page, "Account");
+    srow(s, "Edit profile", "Display name, username and bio", chev(), function () { editBio(p); });
+    srow(s, "Email", state.user.email || "", chev(), changeEmail);
+    srow(s, "Password", "Change your password", chev(), changePassword);
+    srow(s, "Switch account", "Log into another account on this device", chev(), switchPopup);
+    s = setSec(page, "Privacy");
+    srow(s, "Private account", "Only people you approve can follow you and see your videos", tgl(!!p.is_private, function (v) { return setProfile({ is_private: v }); }));
+    srow(s, "Follow requests", nReq ? nReq + " waiting" : "No requests", chev(), requestsPopup);
+    srow(s, "Who can message you", "You still need to follow each other", sel([["friends", "Friends"], ["nobody", "No one"]], p.who_can_message || "friends", function (v) { setProfile({ who_can_message: v }); }));
+    srow(s, "Who can comment on your videos", "", sel([["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "No one"]], p.who_can_comment || "everyone", function (v) { setProfile({ who_can_comment: v }); }));
+    srow(s, "Blocked accounts", "", chev(), blockedPopup);
+    s = setSec(page, "Content and display");
+    srow(s, "Theme", "", sel([["dark", "Dark"], ["light", "Light"]], document.documentElement.dataset.theme || "dark", setTheme));
+    srow(s, "Videos start with sound", "Your browser may still block it", tgl(!state.muted, function (v) { setMuted(!v); return true; }));
+    s = setSec(page, "Your data");
+    srow(s, "Download your data", "Profile, videos, comments, likes and follows", chev(), exportData);
+    srow(s, "Deactivate account", "Hide your profile and videos. Log in again to bring it back", chev(), deactivate);
+    srow(s, "Delete account", "Permanently delete your account and everything on it", chev(), deleteAccount, true);
+    s = setSec(page, "Support");
+    srow(s, "Terms of Service", "", chev(), function () { location.href = "terms.html"; });
+    srow(s, "Privacy Policy", "", chev(), function () { location.href = "privacy.html"; });
+    s = setSec(page, "");
+    srow(s, "Log out", "@" + state.user.name, null, logout, true);
+  }
+  async function changeEmail() {
+    var e = prompt("New email address"); if (!e) return; e = e.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { toast("Enter a valid email"); return; }
+    var r = await sb.auth.updateUser({ email: e });
+    toast(r.error ? r.error.message : "Check your inbox to confirm the new email");
+  }
+  async function changePassword() {
+    var pw = prompt("New password (at least 6 characters)"); if (!pw) return;
+    if (pw.length < 6) { toast("Password must be at least 6 characters"); return; }
+    var r = await sb.auth.updateUser({ password: pw });
+    toast(r.error ? r.error.message : "Password changed");
+  }
+  async function switchPopup() {
+    var cur = await sb.auth.getSession();
+    if (cur.data && cur.data.session) saveAcct(cur.data.session, state.user.name);
+    var pp = popup("Switch account", "Accounts you have logged into on this device.");
+    getAccts().forEach(function (a) {
+      var b = el("button", "acct"); b.appendChild(avatar(a.name, 40));
+      var nm = el("b", null, "@" + a.name); nm.style.flex = "1"; b.appendChild(nm);
+      if (a.id === state.user.id) b.appendChild(el("span", "sv", "Current"));
+      else b.addEventListener("click", function () { pp.close(); switchTo(a); });
+      pp.m.appendChild(b);
+    });
+    var add = el("button", "btn line", "Add account"); add.style.cssText = "width:100%;margin-top:12px";
+    add.addEventListener("click", function () { pp.close(); openModal("login"); });
+    pp.m.appendChild(add);
+  }
+  async function switchTo(a) {
+    var cur = await sb.auth.getSession();
+    if (cur.data && cur.data.session) saveAcct(cur.data.session, state.user && state.user.name);
+    var r = await sb.auth.setSession({ access_token: a.access_token, refresh_token: a.refresh_token });
+    if (r.error || !r.data || !r.data.session) {
+      putAccts(getAccts().filter(function (x) { return x.id !== a.id; }));
+      toast("That login expired. Please log in again."); openModal("login"); return;
+    }
+    toast("Switched to @" + a.name); go("#/foryou");
+  }
+  async function requestsPopup() {
+    var pp = popup("Follow requests", "People waiting for your approval.");
+    var r = await sb.from("follow_requests").select("requester_id,profiles!follow_requests_requester_id_fkey(username)").eq("target_id", state.user.id);
+    var rows = r.data || [];
+    if (!rows.length) pp.m.appendChild(el("p", "cmuted", "No requests"));
+    rows.forEach(function (x) {
+      var name = (x.profiles && x.profiles.username) || "user";
+      var row = el("div", "acct"); row.appendChild(avatar(name, 40));
+      var nm = el("b", null, "@" + name); nm.style.flex = "1"; row.appendChild(nm);
+      var ok = el("button", "btn sm", "Accept"), no = el("button", "btn sm ghost", "Decline");
+      ok.addEventListener("click", async function () {
+        var q = await sb.rpc("accept_follow_request", { requester: x.requester_id });
+        if (q.error) { toast("Could not accept"); return; } row.remove(); toast("@" + name + " now follows you");
+      });
+      no.addEventListener("click", async function () {
+        var q = await sb.from("follow_requests").delete().eq("requester_id", x.requester_id).eq("target_id", state.user.id);
+        if (q.error) { toast("Could not decline"); return; } row.remove();
+      });
+      row.appendChild(ok); row.appendChild(no); pp.m.appendChild(row);
+    });
+  }
+  async function blockedPopup() {
+    var pp = popup("Blocked accounts", "You will not see their videos or comments.");
+    var r = await sb.from("blocks").select("blocked_id,profiles!blocks_blocked_id_fkey(username)").eq("blocker_id", state.user.id);
+    var rows = r.data || [];
+    if (!rows.length) pp.m.appendChild(el("p", "cmuted", "You have not blocked anyone"));
+    rows.forEach(function (x) {
+      var name = (x.profiles && x.profiles.username) || "user";
+      var row = el("div", "acct"); row.appendChild(avatar(name, 40));
+      var nm = el("b", null, "@" + name); nm.style.flex = "1"; row.appendChild(nm);
+      var ub = el("button", "btn sm ghost", "Unblock");
+      ub.addEventListener("click", async function () {
+        var q = await sb.from("blocks").delete().eq("blocker_id", state.user.id).eq("blocked_id", x.blocked_id);
+        if (q.error) { toast("Could not unblock"); return; } state.blocked.delete(x.blocked_id); row.remove(); toast("Unblocked @" + name);
+      });
+      row.appendChild(ub); pp.m.appendChild(row);
+    });
+  }
+  async function exportData() {
+    var uid = state.user.id;
+    toast("Preparing your data...");
+    var r = await Promise.all([
+      sb.from("profiles").select("*").eq("id", uid).maybeSingle(),
+      sb.from("videos").select("*").eq("user_id", uid),
+      sb.from("comments").select("*").eq("user_id", uid),
+      sb.from("likes").select("*").eq("user_id", uid),
+      sb.from("follows").select("*").or("follower_id.eq." + uid + ",following_id.eq." + uid)
+    ]);
+    var data = { exported_at: new Date().toISOString(), email: state.user.email, profile: r[0].data, videos: r[1].data, comments: r[2].data, likes: r[3].data, follows: r[4].data };
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "vibin-data.json";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+  }
+  async function deactivate() {
+    if (!confirm("Deactivate your account? Your profile and videos will be hidden until you log back in.")) return;
+    var r = await sb.from("profiles").update({ deactivated: true }).eq("id", state.user.id);
+    if (r.error) { toast("Could not deactivate: " + r.error.message); return; }
+    logout(); toast("Account deactivated. Log in any time to bring it back.");
+  }
+  async function deleteAccount() {
+    var t = prompt("This permanently deletes your account, videos, comments and messages.\nType your username (" + state.user.name + ") to confirm:");
+    if (t === null) return;
+    if (t.trim().toLowerCase() !== state.user.name.toLowerCase()) { toast("That does not match your username"); return; }
+    var id = state.user.id;
+    var r = await sb.rpc("delete_my_account");
+    if (r.error) { toast("Could not delete: " + r.error.message); return; }
+    putAccts(getAccts().filter(function (x) { return x.id !== id; }));
+    try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
+    toast("Your account was deleted");
   }
 
   /* ---------- router ---------- */
@@ -1318,6 +1702,7 @@
       case "u": return pageProfile(arg());
       case "v": return pageVideo(arg());
       case "search": return pageSearch(arg());
+      case "settings": return pageSettings();
       default: return pageFeed("foryou");
     }
   }
@@ -1329,7 +1714,7 @@
     if (!sb) return;
     var r = await sb.from("profiles").select("id,username,avatar_url").order("created_at", { ascending: false }).limit(30);
     if (r.error) return;
-    suggestPool = r.data || []; renderSuggested();
+    suggestPool = r.data || []; suggestPool.forEach(noteAv); renderSuggested();
   }
   function renderSuggested() {
     var box = $("suggest"); box.textContent = "";
@@ -1337,7 +1722,7 @@
     $("suggestWrap").hidden = !list.length;
     list.forEach(function (p) {
       var b = el("a", "sug"); b.href = "#/u/" + encodeURIComponent(p.username);
-      b.appendChild(avatar(p.username, 36, p.avatar_url)); b.appendChild(el("b", null, p.username)); box.appendChild(b);
+      b.appendChild(avatar(p.username, 36)); b.appendChild(el("b", null, p.username)); box.appendChild(b);
     });
   }
 
@@ -1346,8 +1731,9 @@
   function renderAuthArea() {
     var a = $("authArea"); a.textContent = "";
     var up = el("a", "up-btn"); up.href = "#/upload"; up.innerHTML = svg("add", 18) + "<span>Upload</span>"; a.appendChild(up);
+    if (state.user) { var gear = el("a", "up-btn"); gear.href = "#/settings"; gear.title = "Settings"; gear.setAttribute("aria-label", "Settings"); gear.innerHTML = svg("settings", 20); gear.style.padding = "8px 10px"; a.appendChild(gear); }
     if (state.user) {
-      var chip = el("div", "chip"); chip.appendChild(avatar(state.user.name, 36, state.user.avatar));
+      var chip = el("div", "chip"); chip.appendChild(avatar(state.user.name, 36));
       chip.addEventListener("click", function (e) {
         e.stopPropagation();
         var old = a.querySelector(".umenu"); if (old) { old.remove(); return; }
@@ -1375,7 +1761,7 @@
   }
   function openModal(m) { setMode(m || "login"); $("authModal").classList.add("show"); }
   function closeModal() { $("authModal").classList.remove("show"); }
-  function logout() { if (sb) sb.auth.signOut(); }
+  function logout() { if (!sb) return; if (state.user) putAccts(getAccts().filter(function (x) { return x.id !== state.user.id; })); sb.auth.signOut(); }
 
   function fallbackName(au) {
     var md = au.user_metadata || {};
@@ -1383,12 +1769,18 @@
     return n.length >= 2 ? n : "user";
   }
   async function ensureProfile(au) {
-    var r = await sb.from("profiles").select("id,username,bio,avatar_url").eq("id", au.id).maybeSingle();
-    if (r.data) return r.data;
+    var r = await sb.from("profiles").select("id,username,bio,deactivated,avatar_url").eq("id", au.id).maybeSingle();
+    if (r.data) {
+      if (r.data.deactivated) {
+        var ra = await sb.from("profiles").update({ deactivated: false }).eq("id", au.id);
+        if (!ra.error) setTimeout(function () { toast("Welcome back! Your account is active again."); }, 700);
+      }
+      return r.data;
+    }
     if (r.error) return null;
     var name = fallbackName(au);
     for (var i = 0; i < 4; i++) {
-      var ins = await sb.from("profiles").insert({ id: au.id, username: name }).select("id,username,bio,avatar_url").maybeSingle();
+      var ins = await sb.from("profiles").insert({ id: au.id, username: name }).select("id,username,bio").maybeSingle();
       if (ins.data) return ins.data;
       if (ins.error && /duplicate|unique/i.test(ins.error.message || "")) { name = name.slice(0, 16) + Math.floor(1000 + Math.random() * 9000); continue; }
       return null;
@@ -1396,6 +1788,8 @@
     return null;
   }
   async function loadMySets() {
+    state.requested = new Set();
+    state.reposts = new Set(); state.blocked = new Set();
     state.likes = new Set(); state.saves = new Set(); state.following = new Set();
     if (!state.user || !sb) return;
     var uid = state.user.id;
@@ -1403,11 +1797,17 @@
       var r = await Promise.all([
         sb.from("likes").select("video_id").eq("user_id", uid).limit(1000),
         sb.from("saves").select("video_id").eq("user_id", uid).limit(1000),
-        sb.from("follows").select("following_id").eq("follower_id", uid).limit(1000)
+        sb.from("follows").select("following_id").eq("follower_id", uid).limit(1000),
+        sb.from("reposts").select("video_id").eq("user_id", uid).limit(1000),
+        sb.from("blocks").select("blocked_id").eq("blocker_id", uid).limit(1000),
+        sb.from("follow_requests").select("target_id").eq("requester_id", uid).limit(1000)
       ]);
       (r[0].data || []).forEach(function (x) { state.likes.add(x.video_id); });
       (r[1].data || []).forEach(function (x) { state.saves.add(x.video_id); });
       (r[2].data || []).forEach(function (x) { state.following.add(x.following_id); });
+      (r[3].data || []).forEach(function (x) { state.reposts.add(x.video_id); });
+      (r[4].data || []).forEach(function (x) { state.blocked.add(x.blocked_id); });
+      (r[5].data || []).forEach(function (x) { state.requested.add(x.target_id); });
     } catch (e) {}
   }
   var sessionSeq = 0;
@@ -1418,13 +1818,14 @@
       var prof = await ensureProfile(au);
       if (seq !== sessionSeq) return;
       var name = prof ? prof.username : fallbackName(au);
-      state.user = { id: au.id, name: name, email: au.email, bio: prof ? (prof.bio || "") : "", avatar: prof ? (prof.avatar_url || "") : "" };
+      state.user = { id: au.id, name: name, email: au.email, bio: prof ? (prof.bio || "") : "" };
+      saveAcct(session, name); if (prof) noteAv(prof);
       closeModal();
       await loadMySets();
       if (seq !== sessionSeq) return;
       if (announce && !was) toast("Welcome, " + name);
     } else {
-      state.user = null; state.likes = new Set(); state.saves = new Set(); state.following = new Set();
+      state.user = null; state.requested = new Set(); state.reposts = new Set(); state.blocked = new Set(); state.likes = new Set(); state.saves = new Set(); state.following = new Set();
       if (announce && was) toast("Logged out");
     }
     renderAuthArea(); renderSuggested(); route();
@@ -1489,11 +1890,13 @@
   });
 
   /* ---------- start ---------- */
+  try { setTheme(localStorage.getItem("vibin_theme") === "light" ? "light" : "dark"); } catch (e) {}
   buildNav();
   renderAuthArea();
   if (sb) {
     sb.auth.getSession().then(function (r) { applySession(r.data.session, false); });
     sb.auth.onAuthStateChange(function (evt, session) {
+      if (session) saveAcct(session);
       if (evt === "INITIAL_SESSION" || evt === "TOKEN_REFRESHED" || evt === "USER_UPDATED") return;
       if (evt === "SIGNED_IN" && session && state.user && state.user.id === session.user.id) return;
       setTimeout(function () { applySession(session, evt === "SIGNED_IN" || evt === "SIGNED_OUT"); }, 0);
