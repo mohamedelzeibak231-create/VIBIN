@@ -283,6 +283,8 @@
     .note a { text-decoration: underline; }
     .error { color: #ff8a8a; font-size: .85rem; min-height: 1.1em; }
 
+    .vtick { display: inline-flex; vertical-align: middle; margin-left: 4px; line-height: 0; }
+    .vtick:empty { display: none; }
     .banbar { position: fixed; top: 0; left: 0; right: 0; background: #c62828; color: #fff; padding: 10px 16px; font-weight: 600; font-size: .85rem; text-align: center; z-index: 80; }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #fff; color: #222; padding: 12px 20px; border-radius: 999px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s; z-index: 90; max-width: 90%; text-align: center; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -534,11 +536,37 @@
     }
   } catch (e) { sb = null; }
 
-  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true, reposts: new Set(), blocked: new Set(), requested: new Set(), isAdmin: false, ban: null };
+  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true, reposts: new Set(), blocked: new Set(), requested: new Set(), isAdmin: false, ban: null, verified: new Set() };
   try { if (localStorage.getItem("vibin_muted") === "0") state.muted = false; } catch (e) {}
   var routeId = 0, mainFeed = null, viewerFeed = null, exploreSort = "trending";
 
   function need() { if (!sb) { toast("Not connected to the server yet"); return false; } return true; }
+  function badgeSvg(s) {
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" aria-label="Verified"><circle cx="12" cy="12" r="11" fill="#2b2b2e" stroke="#fff" stroke-width="1.5"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function vbadge(uid, size) {
+    var s = el("span", "vtick"); s.dataset.vuid = uid; s.dataset.sz = size || 16;
+    if (state.verified.has(uid)) s.innerHTML = badgeSvg(size || 16);
+    return s;
+  }
+  function fillBadges() {
+    document.querySelectorAll(".vtick[data-vuid]").forEach(function (s) {
+      var on = state.verified.has(s.dataset.vuid);
+      if (on && !s.firstChild) s.innerHTML = badgeSvg(+s.dataset.sz || 16);
+      else if (!on && s.firstChild) s.textContent = "";
+    });
+  }
+  async function loadVerified() {
+    if (!sb) return;
+    var r = await sb.from("verified_users").select("user_id").limit(5000);
+    if (!r.error && r.data) { state.verified = new Set(r.data.map(function (x) { return x.user_id; })); fillBadges(); }
+  }
+  try {
+    new MutationObserver(function () {
+      if (fillBadges._t) return;
+      fillBadges._t = setTimeout(function () { fillBadges._t = 0; fillBadges(); }, 30);
+    }).observe(document.body, { childList: true, subtree: true });
+  } catch (e) {}
   function banLive(b) { return !!b && (!b.expires_at || new Date(b.expires_at) > new Date()); }
   function banText(b) {
     b = b || state.ban; if (!b) return "";
@@ -1016,7 +1044,7 @@
 
     var meta = el("div", "meta");
     var un = el("a", "un", v.display ? v.display + " (@" + v.username + ")" : "@" + v.username); un.href = "#/u/" + encodeURIComponent(v.username);
-    meta.appendChild(un); meta.appendChild(el("span", "when", ago(v.created_at)));
+    meta.appendChild(un); meta.appendChild(vbadge(v.user_id, 14)); meta.appendChild(el("span", "when", ago(v.created_at)));
     if (v.caption || v.description) {
       var caps = [];
       if (v.caption) caps.push(buildCaption(v.caption));
@@ -1285,7 +1313,7 @@
     var row = el("div", "cm" + (isRep ? " rep" : ""));
     var a = el("a"); a.href = "#/u/" + encodeURIComponent(name); a.appendChild(avatar(name, isRep ? 28 : 36)); row.appendChild(a);
     var body = el("div", "body");
-    body.appendChild(el("div", "who", shown));
+    var who = el("div", "who", shown); who.appendChild(vbadge(c.user_id, 14)); body.appendChild(who);
     body.appendChild(buildCaption(c.body, "txt"));
     var acts = el("div", "acts"); acts.appendChild(el("span", "when", ago(c.created_at)));
     var rb = el("button", null, "Reply");
@@ -1676,7 +1704,7 @@
     var head = el("div", "phead"); page.appendChild(head);
     head.appendChild(avatar(p.username, 110));
     var info = el("div", "pinfo"); head.appendChild(info);
-    var h1 = el("h1", null, p.display_name || p.username); h1.dataset.u = p.username; info.appendChild(h1);
+    var h1 = el("h1", null, p.display_name || p.username); h1.dataset.u = p.username; h1.appendChild(vbadge(p.id, 22)); info.appendChild(h1);
     if (p.display_name) { var unl = el("div", null, "@" + p.username); unl.style.cssText = "color:var(--muted);margin:-4px 0 6px"; info.appendChild(unl); }
     var btns = el("div", "pbtns"); info.appendChild(btns);
     if (own) {
@@ -1698,6 +1726,14 @@
         var ab = el("button", "btn line", pban ? "Unban" : "Ban"); ab.style.color = "#ff6b6b";
         ab.addEventListener("click", function () { if (pban) adminUnban(p, route); else adminBan(p, route); });
         btns.appendChild(ab);
+        var vb = el("button", "btn line", state.verified.has(p.id) ? "Remove tick" : "Verify");
+        vb.addEventListener("click", async function () {
+          var on = !state.verified.has(p.id); vb.disabled = true;
+          var r = await sb.rpc("admin_set_verified", { target: p.id, p_on: on });
+          if (r.error) { vb.disabled = false; toast(isSetupError(r.error) ? "Run verified.sql in Supabase first" : "Could not change: " + r.error.message); return; }
+          await loadVerified(); toast(on ? "@" + p.username + " is verified" : "Tick removed from @" + p.username); route();
+        });
+        btns.appendChild(vb);
         if (pban) { var bs = el("div", null, "Banned " + (pban.expires_at ? "until " + new Date(pban.expires_at).toLocaleString() : "forever") + (pban.reason ? " (" + pban.reason + ")" : "")); bs.style.cssText = "color:#ff6b6b;font-size:.85rem;margin:6px 0"; info.appendChild(bs); }
       }
     }
@@ -2545,6 +2581,7 @@
       setTimeout(function () { applySession(session, evt === "SIGNED_IN" || evt === "SIGNED_OUT"); }, 0);
     });
     loadSuggested();
+    loadVerified();
   } else {
     route();
   }
