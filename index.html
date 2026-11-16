@@ -1078,6 +1078,14 @@
       var b1 = el("button"); b1.innerHTML = svg("link", 18) + "<span>Copy link</span>";
       b1.addEventListener("click", function () { closeMenus(); shareVideo(v); });
       m.appendChild(b1);
+      if (state.isAdmin && !isMe(v.user_id)) {
+        var ba = el("button", "danger"); ba.innerHTML = svg("ban", 18) + "<span>Admin: ban @" + v.username + "</span>";
+        ba.addEventListener("click", function () { closeMenus(); adminBan({ id: v.user_id, username: v.username }, route); }); m.appendChild(ba);
+        var bt = el("button", "danger"); bt.innerHTML = svg("trash", 18) + "<span>Admin: delete video</span>";
+        bt.addEventListener("click", function () { closeMenus(); deleteVideo(v); }); m.appendChild(bt);
+        var bx = el("button"); bx.innerHTML = svg("edit", 18) + "<span>Admin: edit video</span>";
+        bx.addEventListener("click", function () { closeMenus(); editVideo(v); }); m.appendChild(bx);
+      }
       if (!isMe(v.user_id)) {
         var br = el("button"); br.innerHTML = svg("repeat", 18) + "<span>" + (state.reposts.has(v.id) ? "Undo repost" : "Repost") + "</span>";
         br.addEventListener("click", function () { closeMenus(); toggleRepost(v); }); m.appendChild(br);
@@ -1301,7 +1309,7 @@
     });
     row.appendChild(lk);
 
-    if (cv && (isMe(c.user_id) || isMe(cv.v.user_id))) {
+    if (cv && (isMe(c.user_id) || isMe(cv.v.user_id) || state.isAdmin)) {
       var d = el("button", "del"); d.setAttribute("aria-label", "Delete comment"); d.innerHTML = svg("trash", 16);
       d.addEventListener("click", async function () {
         var r = await sb.from("comments").delete().eq("id", c.id);
