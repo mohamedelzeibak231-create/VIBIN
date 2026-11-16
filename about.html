@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vibin - short videos and photos, good vibes only</title>
+  <meta name="description" content="vibin is a place to share short videos and photos, follow people you like and chat with friends.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <style>
+    :root { --bg:#0f0d1a; --panel:#181526; --text:#f4f1ff; --muted:#9a93b8; --accent:#ff6a88; --accent2:#8e54e9; --line:#2e2a47; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 1.6rem; font-weight: 800; margin-bottom: 28px; text-decoration: none; }
+    .brand img { width: 36px; height: 36px; border-radius: 10px; }
+    .brand span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero { padding: 24px 0 8px; }
+    h1 { font-size: 2.6rem; line-height: 1.15; margin-bottom: 14px; }
+    h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { font-size: 1.15rem; color: #d9d4ee; max-width: 560px; }
+    .cta { display: inline-block; margin-top: 24px; padding: 13px 28px; border-radius: 10px; font-weight: 700; color: #fff; text-decoration: none; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .cta:hover { filter: brightness(1.1); }
+    h2 { font-size: 1.2rem; margin: 40px 0 10px; }
+    p, li { color: #d9d4ee; }
+    ul { padding-left: 22px; margin: 8px 0; }
+    li { margin: 4px 0; }
+    a { color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 12px; }
+    .box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+    .box b { display: block; margin-bottom: 4px; color: var(--text); }
+    .box p { font-size: .95rem; color: var(--muted); }
+    footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+    footer a { margin-right: 14px; }
+    @media (max-width: 520px) { h1 { font-size: 2rem; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="about.html"><img src="logo.svg" alt=""><span>vibin</span></a>
+
+  <div class="hero">
+    <h1>Short videos and photos. <span>Good vibes only.</span></h1>
+    <p class="lead">vibin is a place to share short videos and photo posts, follow people you like, and chat with your friends.</p>
+    <a class="cta" href="./">Open vibin</a>
+  </div>
+
+  <h2>What you can do on vibin</h2>
+  <div class="grid">
+    <div class="box"><b>Post</b><p>Upload a short video or a set of photos and add a caption with #hashtags.</p></div>
+    <div class="box"><b>Discover</b><p>Scroll the For You feed, explore trending posts, and search for people and tags.</p></div>
+    <div class="box"><b>Connect</b><p>Follow creators, like and comment on posts, save your favourites and message friends.</p></div>
+    <div class="box"><b>Stay in control</b><p>Make your account private, block people, and delete your account and data any time.</p></div>
+  </div>
+
+  <h2>Signing in</h2>
+  <p>You can create an account with your email, or continue with Google or Discord. If you use Google or Discord, vibin only receives your basic profile information (name, email address and profile name), which is used to create and manage your account. We never see your Google or Discord password, and we do not sell your information or use it for advertising.</p>
+  <p style="margin-top:10px">You can read exactly how your information is handled in our <a href="privacy.html">Privacy Policy</a> and our <a href="terms.html">Terms of Service</a>.</p>
+
+  <h2>Contact</h2>
+  <div class="box">
+    <p>Questions, feedback or deletion requests: <b style="display:inline;color:var(--text)">melziebak@gmail.com</b></p>
+  </div>
+
+  <footer>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+    <span>&copy; vibin</span>
+  </footer>
+</div>
+</body>
+</html>
