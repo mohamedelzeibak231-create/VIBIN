@@ -11,7 +11,7 @@
   var TICK_MS = 3000, MAX_LEN = 1000, MAX_IMG_MB = 10;
   // Optional: paste a free GIPHY API key (developers.giphy.com) to turn on GIF search.
   // Without a key the GIF tab lets people paste a GIF link instead.
-  var GIPHY_KEY = "";
+  var GIPHY_KEY = "NePCSITZ6MJKq9L7M51qMq5kPKHd9T9M";
   var EMOJI = "😀 😃 😄 😁 😆 😅 😂 🤣 🙂 😉 😊 😍 🥰 😘 😋 😎 🤩 🥳 😏 😢 😭 😤 😡 🤯 😱 🤔 🙄 😴 🤗 🫡 👍 👎 👏 🙌 🙏 💪 👀 💯 🔥 ✨ 💖 ❤️ 🧡 💛 💚 💙 💜 🖤 🎉 🎂 🍕 🍔 🍟 🍿 ☕ 🎮 🎵 ⚽ 🐶 🐱 🦄 🌈 ☀️ 🌙 ⭐".split(" ");
   var STICKERS = "🐶 🐱 🦄 🐼 🦊 🐸 🐵 🐧 🦖 👻 🤖 👽 💩 🎃 🍕 🍩 🚀 🌈 🔥 💖 🎉 👑 🧸 🌮".split(" ");
   var QUICK = ["❤️", "😂", "😮", "😢", "👍", "🔥"];
@@ -316,7 +316,8 @@
       .catch(function (e) {
         S.thread = S.thread.filter(function (m) { return m.id !== tmp.id; });
         if (S.cur && S.cur.id === pid) { renderMsgs(true); if (tmp.kind === "text" && ui.input) ui.input.value = tmp.body; }
-        toast("Could not send. You can only message friends.");
+        var bn = window.vibin && window.vibin.state && window.vibin.state.ban;
+        toast(bn ? "Your account is restricted, so you cannot send messages." : "Could not send. You can only message friends.");
         fail(e);
       });
   }
