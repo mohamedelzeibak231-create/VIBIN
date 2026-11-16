@@ -2252,7 +2252,8 @@
       if (!u.phone && !u.email) { d.m.appendChild(el("p", "sub", "Your account has no phone or email to send a code to.")); return; }
       var viaPhone = !u.email;
       var info = el("p", "otp-hint"); d.m.appendChild(info);
-      var code = dfield(d.m, "text", "Verification code", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 10;
+      var code = dfield(d.m, "text", "6-digit code", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 6; code.pattern = "[0-9]*";
+      code.addEventListener("input", function () { code.value = code.value.replace(/\D/g, "").slice(0, 6); });
       d.m.appendChild(err); d.m.appendChild(go);
       var re = el("button", "linkbtn", "Resend code"); d.m.appendChild(re);
       var sw = null;
@@ -2260,7 +2261,7 @@
         err.textContent = "";
         var r = await sb.auth.signInWithOtp(viaPhone ? { phone: e164(u.phone), options: { shouldCreateUser: false, channel: "sms" } } : { email: u.email, options: { shouldCreateUser: false } });
         if (r.error) { err.textContent = authErr(r.error); return false; }
-        info.textContent = "We sent a code to " + (viaPhone ? maskPhone(u.phone) : maskEmail(u.email)) + ".";
+        info.textContent = viaPhone ? "Verification code sent to " + maskPhone(u.phone) + ". Enter it below to continue." : "Verification code sent to " + maskEmail(u.email) + ". If you can't see it, check your spam folder.";
         return true;
       }
       if (u.phone && u.email) {
@@ -2272,7 +2273,7 @@
       send().then(function (ok) { if (ok) cooldown(re, "Resend code", 30); });
       re.addEventListener("click", async function () { if (await send()) { cooldown(re, "Resend code", 30); toast("New code sent"); } });
       var run = async function () {
-        err.textContent = ""; if (!code.value.trim()) { err.textContent = "Type the code we sent you."; return; }
+        err.textContent = ""; if (code.value.trim().length !== 6) { err.textContent = "Type the 6-digit code we sent you."; return; }
         go.disabled = true;
         var v = await sb.auth.verifyOtp(viaPhone ? { phone: e164(u.phone), token: code.value.trim(), type: "sms" } : { email: u.email, token: code.value.trim(), type: "email" });
         go.disabled = false;
