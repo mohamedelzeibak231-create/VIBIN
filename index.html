@@ -542,20 +542,23 @@
     { key: "following", label: "Following", icon: "users", hash: "#/following", side: true, bottom: "Following" },
     { key: "explore", label: "Explore", icon: "compass", hash: "#/explore", side: true, bottom: "Explore" },
     { key: "live", label: "LIVE", icon: "live", hash: "#/live", side: true },
-    { key: "upload", label: "Upload", icon: "plus", hash: "#/upload", side: true, bottom: "", plusnav: true },
+    { key: "create", label: "Create", icon: "plus", hash: "#/create", side: true, bottom: "", plusnav: true, action: "create" },
+    { key: "upload", label: "Upload", icon: "upload", hash: "#/upload", side: true, bottom: "" },
     { key: "me", label: "Profile", icon: "user", hash: "#/me", side: true, bottom: "Profile" }
   ];
   function buildNav() {
     var side = $("sidenav"), bot = $("bottomnav");
-    var bottomOrder = ["foryou", "explore", "upload", "following", "me"];
+    var bottomOrder = ["foryou", "explore", "create", "following", "me"];
     NAV.forEach(function (n) {
       var b = el("a", "nav"); b.href = n.hash; b.dataset.nav = n.key;
       b.appendChild(iconEl(n.icon, 24, "ico")); b.appendChild(el("span", null, n.label));
+      if (n.action) b.addEventListener("click", function (e) { e.preventDefault(); openCreate(); });
       side.appendChild(b);
     });
     bottomOrder.forEach(function (k) {
       var n = NAV.filter(function (x) { return x.key === k; })[0];
       var b = el("a", "nav" + (n.plusnav ? " plusnav" : "")); b.href = n.hash; b.dataset.nav = n.key;
+      if (n.action) b.addEventListener("click", function (e) { e.preventDefault(); openCreate(); });
       if (n.plusnav) { var pl = el("span", "pl"); pl.innerHTML = svg("add", 22); b.appendChild(pl); }
       else { b.appendChild(iconEl(n.icon, 24)); b.appendChild(el("span", null, n.bottom)); }
       bot.appendChild(b);
@@ -570,6 +573,16 @@
     pauseAll();
   }
   function go(hash) { if (location.hash === hash) route(); else location.hash = hash; }
+  /* Create studio (camera + effects + minigames + music), lives in create.js */
+  function openCreate() {
+    if (!state.user) { openModal("login"); return; }
+    if (!window.VibinStudio) { toast("Create is still loading, try again in a sec"); return; }
+    window.VibinStudio.open({
+      toast: toast,
+      onUpload: function () { go("#/upload"); },
+      onDone: function (files) { window.__vibinPending = files; go("#/upload"); }
+    });
+  }
   function pauseAll() { document.querySelectorAll("video").forEach(function (v) { try { if (!v.paused) v.pause(); } catch (e) {} }); }
 
   function emptyState(c, icon, title, text, btnText, btnFn) {
@@ -1396,6 +1409,7 @@
     ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
     drop.addEventListener("drop", function (e) { if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); });
     discard.addEventListener("click", function () { clearPreview(); go("#/foryou"); });
+    if (window.__vibinPending) { var pf = window.__vibinPending; window.__vibinPending = null; setFiles(pf); }
 
     postBtn.addEventListener("click", async function () {
       if (!files.length) { toast("Choose a video or photos first"); return; }
@@ -1910,6 +1924,9 @@
   var mode = "login";
   function renderAuthArea() {
     var a = $("authArea"); a.textContent = "";
+    var cr = el("a", "up-btn"); cr.href = "#"; cr.innerHTML = svg("video", 18) + "<span>Create</span>";
+    cr.style.cssText = "background:linear-gradient(90deg,var(--accent),var(--accent2));border-color:transparent;color:#fff";
+    cr.addEventListener("click", function (e) { e.preventDefault(); openCreate(); }); a.appendChild(cr);
     var up = el("a", "up-btn"); up.href = "#/upload"; up.innerHTML = svg("add", 18) + "<span>Upload</span>"; a.appendChild(up);
     if (state.user) { var gear = el("a", "up-btn"); gear.href = "#/settings"; gear.title = "Settings"; gear.setAttribute("aria-label", "Settings"); gear.innerHTML = svg("settings", 20); gear.style.padding = "8px 10px"; a.appendChild(gear); }
     if (state.user) {
@@ -2137,6 +2154,7 @@
   }
 })();
 </script>
+<script src="create.js" charset="utf-8"></script>
 <script src="messages.js"></script>
 </body>
 </html>
