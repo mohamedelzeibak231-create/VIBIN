@@ -2205,35 +2205,8 @@
       go.style.cssText = "width:100%;margin-top:6px";
       if (!sb) { d.close(false); return; }
 
-      if (u.discord) {
-        d.m.appendChild(el("p", "sub", "You signed in with Discord, so enter your vibin password to continue."));
-        sb.auth.getUser().then(function (g) {
-          var au = g.data && g.data.user;
-          if (au && !hasPassword(au)) {
-            d.m.appendChild(el("p", "otp-hint", "You have not made a vibin password yet. Create one first, then try again."));
-            var mk = el("button", "btn", "Create password"); mk.style.cssText = "width:100%";
-            mk.addEventListener("click", function () { d.close(false); askCreatePassword(au, true); });
-            d.m.appendChild(mk); return;
-          }
-          var pw = dfield(d.m, "password", "Your password", "current-password");
-          d.m.appendChild(err); d.m.appendChild(go);
-          var run = async function () {
-            err.textContent = ""; if (!pw.value) { err.textContent = "Enter your password."; return; }
-            go.disabled = true;
-            var chk = await sb.auth.signInWithPassword({ email: u.email, password: pw.value });
-            go.disabled = false;
-            if (chk.error) { err.textContent = /invalid login|credentials/i.test(chk.error.message || "") ? "That password is not right." : authErr(chk.error); return; }
-            d.close(true);
-          };
-          go.addEventListener("click", run);
-          pw.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); run(); } });
-          pw.focus();
-        });
-        return;
-      }
-
       if (!u.phone && !u.email) { d.m.appendChild(el("p", "sub", "Your account has no phone or email to send a code to.")); return; }
-      var viaPhone = !!u.phone;
+      var viaPhone = !u.email;
       var info = el("p", "otp-hint"); d.m.appendChild(info);
       var code = dfield(d.m, "text", "Verification code", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 10;
       d.m.appendChild(err); d.m.appendChild(go);
@@ -2247,8 +2220,8 @@
         return true;
       }
       if (u.phone && u.email) {
-        sw = el("button", "linkbtn", "Send it to my email instead"); sw.style.display = "block";
-        sw.addEventListener("click", async function () { viaPhone = false; sw.remove(); if (await send()) cooldown(re, "Resend code", 30); });
+        sw = el("button", "linkbtn", "Send it to my phone instead"); sw.style.display = "block";
+        sw.addEventListener("click", async function () { viaPhone = true; sw.remove(); if (await send()) cooldown(re, "Resend code", 30); });
         d.m.appendChild(sw);
       }
       info.textContent = "Sending a code...";
