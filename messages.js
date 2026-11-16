@@ -12,8 +12,8 @@
   // Optional: paste a free GIPHY API key (developers.giphy.com) to turn on GIF search.
   // Without a key the GIF tab lets people paste a GIF link instead.
   var GIPHY_KEY = "NePCSITZ6MJKq9L7M51qMq5kPKHd9T9M";
-  var EMOJI = "😀 😃 😄 😁 😆 😅 😂 🤣 🙂 😉 😊 😍 🥰 😘 😋 😎 🤩 🥳 😏 😢 😭 😤 😡 🤯 😱 🤔 🙄 😴 🤗 🫡 👍 👎 👏 🙌 🙏 💪 👀 💯 🔥 ✨ 💖 ❤️ 🧡 💛 💚 💙 💜 🖤 🎉 🎂 🍕 🍔 🍟 🍿 ☕ 🎮 🎵 ⚽ 🐶 🐱 🦄 🌈 ☀️ 🌙 ⭐".split(" ");
-  var STICKERS = "🐶 🐱 🦄 🐼 🦊 🐸 🐵 🐧 🦖 👻 🤖 👽 💩 🎃 🍕 🍩 🚀 🌈 🔥 💖 🎉 👑 🧸 🌮".split(" ");
+  var EMOJI = "😀 😃 😄 😁 😆 😅 😂 🤣 🥲 ☺️ 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🫣 🤭 🫢 🤫 🫠 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠 😈 👿 👹 👺 🤡 💩 👻 💀 ☠️ 👽 👾 🤖 🎃 😺 😸 😹 😻 😼 😽 🙀 😿 😾 🙈 🙉 🙊 👋 🤚 🖐️ ✋ 🖖 👌 🤌 🤏 ✌️ 🤞 🫰 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 🫶 👐 🤲 🤝 🙏 ✍️ 💅 🤳 💪 🦾 👀 👁️ 👅 👄 🫦 🧠 🫀 💋 💌 💘 💝 💖 💗 💓 💞 💕 💟 ❣️ 💔 ❤️‍🔥 ❤️ 🧡 💛 💚 💙 💜 🤎 🖤 🤍 💯 💢 💥 💫 💦 💨 💤 🧑‍💻 🕺 💃 🥷 🦸 🦹 🧙 🧛 🧟 🧞 🧜 🧚 👼 🎅 🤶 👑 💍 💎 🎓 🧢 👓 🕶️ 🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🐤 🦆 🦅 🦉 🦇 🐺 🐗 🐴 🦄 🐝 🐛 🦋 🐌 🐞 🐢 🐍 🦖 🦕 🐙 🦑 🦀 🐠 🐟 🐬 🐳 🦈 🐊 🐘 🦒 🦓 🐫 🐑 🐐 🦌 🐕 🐈 🐓 🦜 🦢 🦩 🕊️ 🐀 🐿️ 🦔 🌹 🌸 🌼 🌻 🌷 🌱 🌴 🌵 🍀 🍁 🍄 🌈 ☀️ 🌤️ ⛅ ☁️ 🌧️ ⛈️ ❄️ ⛄ 🌊 🔥 💧 ⚡ 🌙 ⭐ 🌟 ✨ 🌍 🪐 ☄️ 🍎 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🥑 🌽 🥕 🥔 🍞 🧀 🥚 🥞 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🍝 🍜 🍣 🍤 🍙 🍦 🍩 🍪 🎂 🍰 🍫 🍬 🍭 🍿 🥤 🧋 ☕ 🍵 🍺 🍻 🥂 🍷 🍹 ⚽ 🏀 🏈 ⚾ 🎾 🏐 🏓 🥊 🎯 🎮 🕹️ 🎲 🧩 🎸 🎹 🥁 🎤 🎧 🎵 🎶 🎬 📸 📱 💻 🚗 🏎️ 🚀 ✈️ 🏆 🥇 🥈 🥉 🎉 🎊 🎁 🎈 💡 💰 💸 🔔 📣 ✅ ❌ ❓ ❗ ⚠️ 🚫 💬 💭 🔒 🔑 🛑 🏁 🚩 🇮🇪 🇺🇸 🇬🇧 🇪🇬 🇸🇦 🇹🇷 🇪🇸 🇫🇷 🇩🇪 🇮🇹 🇧🇷 🇯🇵".split(" ");
+  var STICKERS = "🐶 🐱 🦄 🐼 🦊 🐸 🐵 🐧 🦖 👻 🤖 👽 💩 🎃 🍕 🍩 🚀 🌈 🔥 💖 🎉 👑 🧸 🌮 😂 🤣 😭 🥺 😍 😎 🤯 🥳 😴 🤡 💀 🫡 🙏 💪 👀 💯 🏆 🍔 🍟 🍿 🎮 ⚽ 🐯 🦁 🐨 🐙 🦋 🐢 🦈 🐬 🌸 ⭐ ☀️ ❄️ 💎 🎁 🎈".split(" ");
   var QUICK = ["❤️", "😂", "😮", "😢", "👍", "🔥"];
 
   var S = {
@@ -361,7 +361,7 @@
     var mine = m.sender_id === S.me;
     var w = el("div", "vm-w " + (mine ? "me" : "them")), row = el("div", "vm-wr"), b;
     if ((m.kind === "image" || m.kind === "gif") && /^https:\/\//.test(m.media_url || "")) {
-      b = el("div", "vm-b vm-media");
+      b = el("div", "vm-b vm-media" + (m.kind === "gif" ? " gif" : ""));
       var im = document.createElement("img"); im.src = m.media_url; im.loading = "lazy"; im.alt = m.kind;
       im.addEventListener("click", function () { window.open(m.media_url, "_blank", "noopener"); });
       b.appendChild(im);
@@ -408,16 +408,18 @@
   function renderPick(tab) {
     S.ptab = tab; var p = ui.pick; p.textContent = "";
     var tabs = el("div", "vm-ptabs");
-    ["Emoji", "Stickers", "GIFs"].forEach(function (t) { var b = el("button", t === tab ? "on" : "", t); b.type = "button"; b.addEventListener("click", function () { renderPick(t); }); tabs.appendChild(b); });
+    ["Emoji", "Stickers", "Memes", "GIFs"].forEach(function (t) { var b = el("button", t === tab ? "on" : "", t); b.type = "button"; b.addEventListener("click", function () { renderPick(t); }); tabs.appendChild(b); });
     p.appendChild(tabs);
     var body = el("div", "vm-pbody" + (tab === "Stickers" ? " st" : "")); p.appendChild(body);
     if (tab === "Emoji") EMOJI.forEach(function (e) { var b = el("button", "vm-em", e); b.type = "button"; b.addEventListener("click", function () { ui.input.value += e; ui.input.focus(); }); body.appendChild(b); });
     else if (tab === "Stickers") STICKERS.forEach(function (e) { var b = el("button", "vm-em", e); b.type = "button"; b.addEventListener("click", function () { sendRaw({ body: e, kind: "sticker" }); closePick(); }); body.appendChild(b); });
-    else gifTab(body);
+    if (tab === "Memes" || tab === "GIFs") gifTab(body, tab === "Memes" ? "memes" : "gifs");
+    if (tab === "Stickers" && GIPHY_KEY) { var more = el("div", "vm-more"); body.appendChild(more); gifTab(more, "stickers"); }
   }
-  function gifTab(body) {
+  function gifTab(body, mode) {
+    mode = mode || "gifs";
     var bar = el("div", "vm-gin"), inp = document.createElement("input"), go = el("button", "btn sm", GIPHY_KEY ? "Search" : "Send");
-    inp.placeholder = GIPHY_KEY ? "Search GIFs" : "Paste a GIF link (https://...)"; go.type = "button";
+    inp.placeholder = GIPHY_KEY ? (mode === "stickers" ? "Search stickers" : mode === "memes" ? "Search memes" : "Search GIFs") : "Paste a GIF link (https://...)"; go.type = "button";
     bar.appendChild(inp); bar.appendChild(go); body.appendChild(bar);
     if (!GIPHY_KEY) {
       go.addEventListener("click", function () {
@@ -430,7 +432,8 @@
     var grid = el("div", "vm-gifs"); body.appendChild(grid);
     function load() {
       var q = inp.value.trim();
-      fetch("https://api.giphy.com/v1/gifs/" + (q ? "search?q=" + encodeURIComponent(q) + "&" : "trending?") + "limit=24&rating=pg-13&api_key=" + GIPHY_KEY)
+      if (mode === "memes") q = "meme" + (q ? " " + q : "");
+      fetch("https://api.giphy.com/v1/" + (mode === "stickers" ? "stickers" : "gifs") + "/" + (q ? "search?q=" + encodeURIComponent(q) + "&" : "trending?") + "limit=40&rating=pg-13&api_key=" + GIPHY_KEY)
         .then(function (r) { return r.json(); }).then(function (j) {
           grid.textContent = "";
           (j.data || []).forEach(function (g) {
@@ -645,7 +648,7 @@
       ".vm-w.me{align-self:flex-end;align-items:flex-end}.vm-w.them{align-self:flex-start;align-items:flex-start}",
       ".vm-wr{display:flex;align-items:center;gap:4px;max-width:100%}.vm-w.me .vm-wr{flex-direction:row-reverse}",
       ".vm-w .vm-b{max-width:100%}",
-      ".vm-media{padding:3px;background:var(--panel2)}.vm-media img{display:block;max-width:240px;max-height:280px;border-radius:15px;cursor:pointer}",
+      ".vm-media{padding:3px;background:var(--panel2)}.vm-media img{display:block;width:220px;height:220px;max-width:100%;object-fit:cover;border-radius:15px;cursor:pointer}.vm-media.gif img{object-fit:contain}",
       ".vm-sticker{font-size:64px;line-height:1.1}",
       ".vm-rb{opacity:0;width:26px;height:26px;border-radius:50%;flex:none;color:var(--muted);display:grid;place-items:center}",
       ".vm-wr:hover .vm-rb{opacity:1}@media (hover:none){.vm-rb{opacity:.55}}",
@@ -656,10 +659,10 @@
       ".vm-ib{width:38px;height:44px;display:grid;place-items:center;color:var(--muted);flex:none}.vm-ib:hover{color:var(--text)}",
       ".vm-pick{border-top:1px solid var(--line);background:var(--panel)}",
       ".vm-ptabs{display:flex;gap:6px;padding:8px 12px 0}.vm-ptabs button{padding:5px 12px;border-radius:999px;font-weight:700;font-size:.85rem;color:var(--muted)}.vm-ptabs button.on{background:var(--panel2);color:var(--text)}",
-      ".vm-pbody{display:flex;flex-wrap:wrap;gap:2px;max-height:200px;overflow-y:auto;padding:8px 10px 10px}",
+      ".vm-pbody{display:flex;flex-wrap:wrap;gap:2px;max-height:260px;overflow-y:auto;padding:8px 10px 10px}",
       ".vm-em{font-size:1.5rem;width:40px;height:40px;border-radius:8px}.vm-em:hover{background:var(--panel2)}",
       ".vm-pbody.st .vm-em{font-size:2.6rem;width:72px;height:72px}",
-      ".vm-gifs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%}.vm-gifs img{width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer}",
+      ".vm-gifs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}.vm-gifs img{width:100%;aspect-ratio:1/1;height:auto;object-fit:contain;background:var(--panel2);border-radius:8px;cursor:pointer}.vm-more{width:100%;margin-top:8px}",
       ".vm-gin{display:flex;gap:6px;width:100%;margin-bottom:6px}.vm-gin input{flex:1;min-width:0;background:var(--panel2);border-radius:999px;padding:8px 14px;outline:none;border:0}",
       ".vc{position:fixed;inset:0;z-index:100;background:#0b0b0d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:40px 16px 32px}",
       ".vc-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}",
