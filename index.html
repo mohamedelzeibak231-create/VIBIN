@@ -283,6 +283,7 @@
     .note a { text-decoration: underline; }
     .error { color: #ff8a8a; font-size: .85rem; min-height: 1.1em; }
 
+    .banbar { position: fixed; top: 0; left: 0; right: 0; background: #c62828; color: #fff; padding: 10px 16px; font-weight: 600; font-size: .85rem; text-align: center; z-index: 80; }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #fff; color: #222; padding: 12px 20px; border-radius: 999px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s; z-index: 90; max-width: 90%; text-align: center; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -533,12 +534,28 @@
     }
   } catch (e) { sb = null; }
 
-  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true, reposts: new Set(), blocked: new Set(), requested: new Set() };
+  var state = { user: null, likes: new Set(), saves: new Set(), following: new Set(), counted: new Set(), muted: true, reposts: new Set(), blocked: new Set(), requested: new Set(), isAdmin: false, ban: null };
   try { if (localStorage.getItem("vibin_muted") === "0") state.muted = false; } catch (e) {}
   var routeId = 0, mainFeed = null, viewerFeed = null, exploreSort = "trending";
 
   function need() { if (!sb) { toast("Not connected to the server yet"); return false; } return true; }
-  function needLogin() { if (!state.user) { openModal("login"); return true; } return false; }
+  function banLive(b) { return !!b && (!b.expires_at || new Date(b.expires_at) > new Date()); }
+  function banText(b) {
+    b = b || state.ban; if (!b) return "";
+    var s = b.expires_at ? "Your account is restricted until " + new Date(b.expires_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Your account is permanently restricted";
+    return s + (b.reason ? ". Reason: " + b.reason : ".");
+  }
+  function showBanBar() {
+    var old = document.getElementById("banbar"); if (old) old.remove();
+    if (!state.ban) return;
+    var d = el("div", "banbar", banText() + " You cannot post, comment, message, like or follow."); d.id = "banbar";
+    document.body.appendChild(d);
+  }
+  function needLogin() {
+    if (!state.user) { openModal("login"); return true; }
+    if (banLive(state.ban)) { toast(banText()); return true; }
+    return false;
+  }
   function isMe(uid) { return !!state.user && state.user.id === uid; }
   function notBlocked(v) { return !state.blocked.has(v.user_id); }
   var AV = {};
@@ -1635,6 +1652,8 @@
     if (pr.error) { if (isSetupError(pr.error)) return setupNeeded(box); return emptyState(box, "user", "Could not load profile", pr.error.message); }
     if (!pr.data) return emptyState(box, "user", "Account not found", "We could not find @" + username + ".", "Go home", function () { go("#/foryou"); });
     var p = pr.data, own = isMe(p.id); noteAv(p);
+    var pban = null;
+    if (state.isAdmin && !own) { var pb = await sb.from("bans").select("expires_at,reason").eq("user_id", p.id).maybeSingle(); if (pb.data && banLive(pb.data)) pban = pb.data; }
     var cs = await Promise.all([
       sb.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", p.id),
       sb.from("follows").select("*", { count: "exact", head: true }).eq("following_id", p.id),
@@ -1667,6 +1686,12 @@
       var bk = el("button", "btn line", state.blocked.has(p.id) ? "Unblock" : "Block");
       bk.addEventListener("click", function () { if (state.blocked.has(p.id)) unblockUser(p.id, p.username); else blockUser(p.id, p.username); });
       btns.appendChild(bk);
+      if (state.isAdmin) {
+        var ab = el("button", "btn line", pban ? "Unban" : "Ban"); ab.style.color = "#ff6b6b";
+        ab.addEventListener("click", function () { if (pban) adminUnban(p, route); else adminBan(p, route); });
+        btns.appendChild(ab);
+        if (pban) { var bs = el("div", null, "Banned " + (pban.expires_at ? "until " + new Date(pban.expires_at).toLocaleString() : "forever") + (pban.reason ? " (" + pban.reason + ")" : "")); bs.style.cssText = "color:#ff6b6b;font-size:.85rem;margin:6px 0"; info.appendChild(bs); }
+      }
     }
     var stats = el("div", "stats"); info.appendChild(stats);
     var fol;
@@ -1844,6 +1869,28 @@
     putAccts(a);
   }
   function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem("vibin_theme", t); } catch (e) {} }
+  function adminBan(p, done) {
+    var pp = popup("Ban @" + p.username, "They will not be able to post, comment, message, like or follow while banned.");
+    var sel = document.createElement("select"); sel.className = "field"; sel.style.marginBottom = "10px";
+    [["1", "1 day"], ["3", "3 days"], ["7", "7 days"], ["30", "30 days"], ["0", "Forever"]].forEach(function (o) {
+      var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op);
+    });
+    var why = document.createElement("input"); why.className = "field"; why.placeholder = "Reason (optional)"; why.maxLength = 200; why.style.marginBottom = "12px";
+    var go = el("button", "btn", "Ban @" + p.username); go.style.cssText = "width:100%;background:#c62828";
+    pp.m.appendChild(sel); pp.m.appendChild(why); pp.m.appendChild(go);
+    go.addEventListener("click", async function () {
+      go.disabled = true;
+      var d = parseInt(sel.value, 10);
+      var r = await sb.rpc("admin_ban", { target: p.id, p_days: d > 0 ? d : null, p_reason: why.value.trim() || null });
+      if (r.error) { go.disabled = false; toast(isSetupError(r.error) ? "Run admin.sql in Supabase first" : "Could not ban: " + r.error.message); return; }
+      pp.close(); toast("@" + p.username + " is banned"); if (done) done();
+    });
+  }
+  async function adminUnban(p, done) {
+    var r = await sb.rpc("admin_unban", { target: p.id });
+    if (r.error) { toast("Could not unban: " + r.error.message); return; }
+    toast("@" + p.username + " is unbanned"); if (done) done();
+  }
   function popup(title, sub) {
     var ov = el("div", "overlay show"), m = el("div", "modal");
     var x = el("button", "close", "\u00d7"); x.addEventListener("click", function () { ov.remove(); }); m.appendChild(x);
@@ -2348,8 +2395,15 @@
     state.requested = new Set();
     state.reposts = new Set(); state.blocked = new Set();
     state.likes = new Set(); state.saves = new Set(); state.following = new Set();
-    if (!state.user || !sb) return;
+    state.isAdmin = false; state.ban = null;
+    if (!state.user || !sb) { showBanBar(); return; }
     var uid = state.user.id;
+    try {
+      var ar = await Promise.all([sb.rpc("is_admin"), sb.from("bans").select("expires_at,reason").eq("user_id", uid).maybeSingle()]);
+      state.isAdmin = ar[0].data === true;
+      state.ban = ar[1].data && banLive(ar[1].data) ? ar[1].data : null;
+    } catch (e) {}
+    showBanBar();
     try {
       var r = await Promise.all([
         sb.from("likes").select("video_id").eq("user_id", uid).limit(1000),
