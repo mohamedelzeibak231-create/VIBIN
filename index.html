@@ -77,6 +77,11 @@
     .feedbox { height: 100%; position: relative; }
     .feed { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; overscroll-behavior: contain; }
     .feed::-webkit-scrollbar { display: none; }
+    .post .stage { transform-origin: 50% 50%; backface-visibility: hidden; }
+    @media (prefers-reduced-motion: reduce) { .post .stage { transform: none !important; opacity: 1 !important; } }
+    .otp-hint { color: var(--muted); font-size: .85rem; margin: -2px 0 10px; }
+    .linkbtn { background: none; border: 0; color: var(--accent2); font-weight: 600; padding: 6px 0; cursor: pointer; }
+    .linkbtn:disabled { opacity: .5; cursor: default; }
     .post { height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; align-items: center; justify-content: center; padding: 14px 0; }
     .stage { display: flex; align-items: flex-end; gap: 16px; height: 100%; max-width: 100%; }
     .screen { position: relative; height: 100%; aspect-ratio: 9 / 16; max-width: 100%; border-radius: 14px; overflow: hidden; background: #000; }
@@ -266,8 +271,8 @@
     .modal h3 { font-size: 1.4rem; margin-bottom: 4px; }
     .modal .sub { color: var(--muted); margin-bottom: 18px; font-size: .9rem; }
     .close { position: absolute; top: 12px; right: 14px; font-size: 1.5rem; color: var(--muted); }
-    .social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; margin-bottom: 10px; border: 1px solid var(--line); background: var(--panel2); }
-    .social:hover { border-color: var(--accent2); }
+    .social, .phonebtn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; margin-bottom: 10px; border: 1px solid var(--line); background: var(--panel2); }
+    .social:hover, .phonebtn:hover { border-color: var(--accent2); }
     .or { text-align: center; color: var(--muted); font-size: .8rem; margin: 12px 0; }
     .form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
     .field { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; outline: none; width: 100%; }
@@ -384,6 +389,10 @@
     <button class="social" data-provider="Discord">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 1.6 15 15 0 0 0-15 0A18 18 0 0 1 8.8 3.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 0 13.5.3 17.9A20 20 0 0 0 6.4 21l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a20 20 0 0 0 6.1-3.1c.4-5.1-.7-9.6-3.2-13.5zM8.5 15.2c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4z"/></svg>
       Continue with Discord
+    </button>
+    <button class="phonebtn" id="phoneBtn" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Continue with phone number
     </button>
 
     <div class="or">or use email</div>
@@ -631,8 +640,130 @@
       likeCount: cnt(r.likes), commentCount: cnt(r.comments)
     };
   }
+  /* ---------- For You: learns what you watch ---------- */
+  var FYP_TOPICS = {
+    soccer: "soccer|futbol|fifa|messi|ronaldo|mbappe|haaland|premierleague|epl|ucl|laliga|striker|goalkeeper|freekick|worldcup|championsleague",
+    basketball: "basketball|nba|wnba|dunk|lebron|hoops|steph",
+    americanfootball: "nfl|touchdown|quarterback|superbowl",
+    sports: "sports|mma|ufc|boxing|tennis|golf|rugby|gaa|hurling|cricket|baseball|athlete",
+    gaming: "gaming|gamer|minecraft|fortnite|roblox|valorant|gta|warzone|twitch|xbox|playstation|ps5|steam|speedrun",
+    anime: "anime|manga|naruto|onepiece|jujutsu|demonslayer|otaku",
+    music: "music|song|singer|rap|beat|guitar|piano|drums|remix|dj|cover",
+    dance: "dance|dancing|choreo",
+    comedy: "funny|comedy|meme|memes|lol|prank|skit|joke|jokes",
+    food: "food|recipe|cooking|baking|chef|foodie|mukbang|asmr",
+    fitness: "gym|workout|fitness|lifting|bodybuilding|gains|cardio|yoga",
+    cars: "car|cars|drift|jdm|supercar|f1|racing|mechanic",
+    pets: "dog|dogs|cat|cats|puppy|kitten|pet|pets",
+    travel: "travel|trip|vacation|beach|hiking|adventure",
+    beauty: "makeup|skincare|hair|grwm|nails|beauty",
+    fashion: "fashion|outfit|ootd|style|thrift|sneakers",
+    art: "art|drawing|painting|artist|sketch|digitalart|craft|diy",
+    tech: "tech|coding|programming|ai|gadget|iphone|android|pc|setup",
+    science: "science|space|nasa|physics|experiment",
+    education: "study|studytok|learn|school|homework|facts|history",
+    motivation: "motivation|mindset|success|grind|hustle",
+    islam: "quran|islam|islamic|surah|dua|ramadan|muslim|recitation"
+  };
+  var FYP_RX = {};
+  Object.keys(FYP_TOPICS).forEach(function (t) { FYP_RX[t] = new RegExp("(?:^|[^a-z0-9])(?:" + FYP_TOPICS[t] + ")(?![a-z0-9])"); });
+  var FYP_STOP = /^(this|that|with|have|from|they|will|your|just|like|what|when|where|about|video|videos|post|vibin|follow|watch|part|here|there|more|some|best|than|then|been|were|them|into|over|only|also|very|love|check|make|made|time|nice|good|real|every|their|which|would|could|should)$/;
+  function fypTags(v) {
+    if (v._tags) return v._tags;
+    var text = ((v.caption || "") + " " + (v.description || "")).toLowerCase(), out = {}, n = 0;
+    Object.keys(FYP_RX).forEach(function (t) { if (FYP_RX[t].test(text)) out["t:" + t] = 1; });
+    (text.match(/#[\p{L}\p{N}_]+/gu) || []).slice(0, 8).forEach(function (h) { out["h:" + h.slice(1)] = 0.8; });
+    (text.match(/\p{L}{4,}/gu) || []).forEach(function (w) { if (n < 6 && !FYP_STOP.test(w) && !out["h:" + w] && !out["w:" + w]) { out["w:" + w] = 0.4; n++; } });
+    v._tags = out; return out;
+  }
+  var fypProf = null, fypProfKey = "", fypTimer = 0, fypN = 0;
+  function fypKey() { return "vibin_fyp_" + (state.user ? state.user.id : "guest"); }
+  function fypLoad() {
+    var k = fypKey();
+    if (fypProf && fypProfKey === k) return fypProf;
+    var p = null; try { p = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
+    if (!p || typeof p !== "object") p = {};
+    p.t = p.t || {}; p.a = p.a || {}; p.seen = p.seen || [];
+    fypProf = p; fypProfKey = k; return p;
+  }
+  function fypSave() {
+    clearTimeout(fypTimer);
+    fypTimer = setTimeout(function () {
+      var p = fypProf; if (!p) return;
+      ["t", "a"].forEach(function (g) {
+        var ks = Object.keys(p[g]); if (ks.length <= 120) return;
+        ks.sort(function (x, y) { return Math.abs(p[g][y]) - Math.abs(p[g][x]); }).slice(120).forEach(function (k) { delete p[g][k]; });
+      });
+      if (p.seen.length > 400) p.seen = p.seen.slice(-400);
+      try { localStorage.setItem(fypProfKey, JSON.stringify(p)); } catch (e) {}
+    }, 700);
+  }
+  function fypBump(v, d) {
+    if (!v) return;
+    var p = fypLoad(), tg = fypTags(v);
+    Object.keys(tg).forEach(function (k) { p.t[k] = Math.max(-12, Math.min(40, (p.t[k] || 0) + d * tg[k])); });
+    if (v.user_id) p.a[v.user_id] = Math.max(-6, Math.min(20, (p.a[v.user_id] || 0) + d * 0.5));
+    if (++fypN % 25 === 0) ["t", "a"].forEach(function (g) { Object.keys(p[g]).forEach(function (k) { p[g][k] *= 0.95; }); });
+    fypSave();
+  }
+  /* watch time: skipped fast = down, watched most of it or rewatched = up */
+  function fypWatch(v, secs, dur) {
+    var p = fypLoad();
+    if (p.seen.indexOf(v.id) < 0) p.seen.push(v.id);
+    var r = secs / Math.max(dur, 1), d;
+    if (secs < 1.5) d = -0.8; else if (r >= 1.5) d = 3.5; else if (r >= 0.9) d = 3; else if (r >= 0.5) d = 1.8; else if (r >= 0.25) d = 0.8; else d = 0.2;
+    fypBump(v, d);
+  }
+  function fypScore(v, p, now) {
+    var tg = fypTags(v), s = 0;
+    Object.keys(tg).forEach(function (k) { s += p.t[k] || 0; });
+    var aff = p.a[v.user_id] || 0;
+    var age = Math.max(0, (now - new Date(v.created_at).getTime()) / 864e5);
+    var pop = Math.min(2, Math.log(2 + (v.views || 0)) * 0.25 + (v.likeCount || 0) * 0.1);
+    return 4 * Math.tanh(s / 10) + 1.5 * Math.tanh(aff / 6) + pop + 1.5 / (1 + age / 3)
+      + (state.following.has(v.user_id) ? 0.8 : 0) + (p.seen.indexOf(v.id) >= 0 ? -3 : 0) + Math.random() * 0.8;
+  }
+  var fyp = { q: [], next: 0, pn: 0, done: false, ids: new Set() };
+  function fypTopTopics(p) {
+    return Object.keys(p.t).filter(function (k) { return k.indexOf("t:") === 0 && p.t[k] >= 5; })
+      .sort(function (a, b) { return p.t[b] - p.t[a]; }).slice(0, 2).map(function (k) { return k.slice(2); });
+  }
+  async function fypFetch(offset) {
+    if (offset === 0) fyp = { q: [], next: 0, pn: 0, done: false, ids: new Set() };
+    var p = fypLoad(), out = [], guard = 0;
+    function take(rows) {
+      rows.map(norm).filter(notBlocked).forEach(function (v) { if (!fyp.ids.has(v.id)) { fyp.ids.add(v.id); fyp.q.push(v); } });
+    }
+    while (out.length < PAGE && guard++ < 4) {
+      if (fyp.q.length < PAGE && !fyp.done) {
+        var r = await sb.from("videos").select(VSELECT).order("created_at", { ascending: false }).range(fyp.next, fyp.next + 59);
+        if (r.error) { if (!out.length && !fyp.q.length) return { list: [], error: r.error }; break; }
+        fyp.next += 60; var rows = r.data || []; if (rows.length < 60) fyp.done = true;
+        take(rows);
+        /* also dig up videos about your top topics, even older ones */
+        var tops = fypTopTopics(p);
+        for (var i = 0; i < tops.length; i++) {
+          var ws = FYP_TOPICS[tops[i]].split("|").slice(0, 8), f = [];
+          ws.forEach(function (w) { f.push("caption.ilike.*" + w + "*"); f.push("description.ilike.*" + w + "*"); });
+          var tr = await sb.from("videos").select(VSELECT).or(f.join(",")).order("created_at", { ascending: false }).range(fyp.pn, fyp.pn + 29);
+          if (!tr.error) take(tr.data || []);
+        }
+        fyp.pn += 30;
+      }
+      if (!fyp.q.length) break;
+      var now = Date.now();
+      fyp.q.forEach(function (v) { v._s = fypScore(v, p, now); });
+      fyp.q.sort(function (a, b) { return b._s - a._s; });
+      while (out.length < PAGE && fyp.q.length) {
+        var j = Math.random() < 0.15 ? Math.floor(Math.random() * fyp.q.length) : 0;
+        out.push(fyp.q.splice(j, 1)[0]);
+      }
+    }
+    return { list: out };
+  }
   async function fetchFeed(kind, offset) {
     if (!sb) return { list: [], error: { message: "Not connected" } };
+    if (kind === "foryou") return fypFetch(offset);
     var q = sb.from("videos").select(VSELECT).order("created_at", { ascending: false });
     if (kind === "following") {
       var ids = Array.from(state.following);
@@ -655,7 +786,7 @@
   async function toggleLike(v, ui) {
     if (needLogin() || !need()) return;
     var on = state.likes.has(v.id);
-    if (on) { state.likes.delete(v.id); v.likeCount = Math.max(0, v.likeCount - 1); } else { state.likes.add(v.id); v.likeCount++; }
+    if (on) { state.likes.delete(v.id); v.likeCount = Math.max(0, v.likeCount - 1); } else { state.likes.add(v.id); v.likeCount++; fypBump(v, 5); }
     ui();
     var r = on
       ? await sb.from("likes").delete().eq("user_id", state.user.id).eq("video_id", v.id)
@@ -668,7 +799,7 @@
   async function toggleSave(v, ui) {
     if (needLogin() || !need()) return;
     var on = state.saves.has(v.id);
-    if (on) state.saves.delete(v.id); else state.saves.add(v.id);
+    if (on) state.saves.delete(v.id); else { state.saves.add(v.id); fypBump(v, 6); }
     ui();
     var r = on
       ? await sb.from("saves").delete().eq("user_id", state.user.id).eq("video_id", v.id)
@@ -978,12 +1109,19 @@
         if (p && p.catch) p.catch(function () {
           if (!vid.muted) { state.muted = true; vid.muted = true; syncMuteUI(); var q = vid.play(); if (q && q.catch) q.catch(function () {}); toast("Tap the speaker to turn sound on"); }
         });
+        if (!obj._t0) obj._t0 = Date.now();
         countView(v);
       },
-      pause: function () { try { vid.pause(); } catch (e) {} },
-      kill: function () { try { vid.pause(); vid.removeAttribute("src"); vid.load(); } catch (e) {} }
+      pause: function () { try { vid.pause(); } catch (e) {} obj._end(); },
+      kill: function () { obj._end(); try { vid.pause(); vid.removeAttribute("src"); vid.load(); } catch (e) {} },
+      _t0: 0,
+      _end: function () {
+        if (!obj._t0) return;
+        var secs = Math.min(90, (Date.now() - obj._t0) / 1000); obj._t0 = 0;
+        fypWatch(v, secs, v.photo ? 8 : (vid.duration || 15));
+      }
     };
-    if (v.photo) { obj.play = function () { countView(v); }; obj.pause = function () {}; obj.kill = function () {}; }
+    if (v.photo) { obj.play = function () { if (!obj._t0) obj._t0 = Date.now(); countView(v); }; obj.pause = function () { obj._end(); }; obj.kill = function () { obj._end(); }; }
     post._post = obj;
     return obj;
   }
@@ -1029,6 +1167,20 @@
         add(r.list); if (r.list.length < PAGE) exhausted = true;
       });
     }
+    /* sliding / depth effect that follows your scroll */
+    var fxRaf = 0, reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function fx() {
+      fxRaf = 0; if (dead || reduce) return;
+      var h = scroller.clientHeight || 1, pos = scroller.scrollTop / h, c = Math.round(pos);
+      for (var k = c - 2; k <= c + 2; k++) {
+        var p = posts[k]; if (!p) continue;
+        var st = p.el.firstChild, r = k - pos, a = Math.min(Math.abs(r), 1);
+        if (a < 0.002) { st.style.transform = ""; st.style.opacity = ""; continue; }
+        st.style.transform = "translateY(" + (r * 7).toFixed(2) + "%) scale(" + (1 - a * 0.12).toFixed(3) + ")";
+        st.style.opacity = (1 - a * 0.55).toFixed(3);
+      }
+    }
+    scroller.addEventListener("scroll", function () { if (!fxRaf) fxRaf = requestAnimationFrame(fx); }, { passive: true });
     add(list);
     if (list.length < PAGE && !opts.fetchMore) exhausted = true;
     if (opts.start) {
@@ -1310,31 +1462,60 @@
   }
 
   var upObjUrl = null;
-  function uploadFile(path, file, onProg) {
+  var MIME_BY_EXT = { mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", ogv: "video/ogg", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
+  var EXT_BY_MIME = { "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm", "video/ogg": "ogv", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+  /* recorded videos come out as "video/webm;codecs=vp9,opus" - storage wants the plain type */
+  function cleanMime(f) {
+    var t = String(f.type || "").split(";")[0].trim().toLowerCase();
+    if (!t || t === "application/octet-stream") { var m = /\.([a-z0-9]+)$/i.exec(f.name || ""); t = (m && MIME_BY_EXT[m[1].toLowerCase()]) || "video/mp4"; }
+    return t;
+  }
+  function uploadMsg(msg) {
+    msg = String(msg || "Upload failed");
+    if (/Bucket not found/i.test(msg)) return "Storage is not set up yet. Run setup.sql in Supabase.";
+    if (/mime type|not supported|invalid_mime/i.test(msg)) return "This file type is not allowed in storage yet. Allow video/webm and video/mp4 on the videos bucket (setup.sql / photos.sql).";
+    if (/exceeded the maximum|too large|payload|413/i.test(msg)) return "That file is over the storage size limit (" + MAX_MB + " MB). Try a shorter video.";
+    if (/failed to fetch|network|load failed/i.test(msg)) return "Could not reach storage. Check your connection, and that the videos bucket allows this file type and size.";
+    return msg;
+  }
+  function uploadViaXhr(path, blob, mime, tok, onProg) {
     return new Promise(function (resolve, reject) {
-      sb.auth.getSession().then(function (r) {
-        var tok = r.data && r.data.session && r.data.session.access_token;
-        if (!tok) return reject(new Error("Please log in again"));
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + path);
-        xhr.setRequestHeader("Authorization", "Bearer " + tok);
-        xhr.setRequestHeader("apikey", SUPABASE_ANON_KEY);
-        xhr.setRequestHeader("x-upsert", "false");
-        xhr.setRequestHeader("cache-control", "max-age=3600");
-        xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
-        xhr.upload.onprogress = function (e) { if (e.lengthComputable) onProg(Math.round(e.loaded / e.total * 100)); };
-        xhr.onload = function () {
-          if (xhr.status >= 200 && xhr.status < 300) return resolve();
-          var msg = "Upload failed";
-          try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
-          if (/Bucket not found/i.test(msg)) msg = "Storage is not set up yet. Run setup.sql in Supabase.";
-          if (/mime type|not supported|invalid_mime/i.test(msg)) msg = "Photos are not allowed in storage yet. Run photos.sql in Supabase.";
-          reject(new Error(msg));
-        };
-        xhr.onerror = function () { reject(new Error("Network error while uploading")); };
-        xhr.send(file);
-      });
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + path);
+      xhr.setRequestHeader("Authorization", "Bearer " + tok);
+      xhr.setRequestHeader("apikey", SUPABASE_ANON_KEY);
+      xhr.setRequestHeader("x-upsert", "false");
+      xhr.setRequestHeader("cache-control", "max-age=3600");
+      xhr.setRequestHeader("Content-Type", mime);
+      xhr.upload.onprogress = function (e) { if (e.lengthComputable) onProg(Math.round(e.loaded / e.total * 100)); };
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) return resolve();
+        var msg = "Upload failed";
+        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
+        reject(new Error(uploadMsg(msg)));
+      };
+      var netErr = function () { var e = new Error("Network error while uploading"); e.network = true; reject(e); };
+      xhr.onerror = netErr; xhr.ontimeout = netErr; xhr.onabort = netErr;
+      xhr.send(blob);
     });
+  }
+  async function uploadFile(path, file, onProg) {
+    var s = await sb.auth.getSession();
+    var tok = s.data && s.data.session && s.data.session.access_token;
+    if (!tok) throw new Error("Please log in again");
+    var mime = cleanMime(file);
+    var blob = new Blob([file], { type: mime });
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try { await uploadViaXhr(path, blob, mime, tok, onProg); return; }
+      catch (e) { if (!e.network) throw e; await new Promise(function (r) { setTimeout(r, 900 * (attempt + 1)); }); }
+    }
+    /* last resort: the supabase-js uploader (fetch based) */
+    onProg(0);
+    var up;
+    try { up = await sb.storage.from(BUCKET).upload(path, blob, { contentType: mime, upsert: false, cacheControl: "3600" }); }
+    catch (e) { throw new Error(uploadMsg(e && e.message)); }
+    if (up.error) throw new Error(uploadMsg(up.error.message));
+    onProg(100);
   }
   var MAX_IMG = 10, MAX_IMG_MB = 10;
   function isVideoFile(f) { return /^video\//.test(f.type) || /\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name); }
@@ -1418,7 +1599,7 @@
       try {
         for (var i = 0; i < files.length; i++) {
           var f = files[i], idx = i, total = files.length;
-          var ext = (f.name.split(".").pop() || (kind === "video" ? "mp4" : "jpg")).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || (kind === "video" ? "mp4" : "jpg");
+          var ext = EXT_BY_MIME[cleanMime(f)] || ((f.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5)) || (kind === "video" ? "mp4" : "jpg");
           var path = state.user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
           await uploadFile(path, f, function (pct) {
             var all = Math.round(((idx + pct / 100) / total) * 100);
@@ -1717,6 +1898,7 @@
     var s = setSec(page, "Account");
     srow(s, "Edit profile", "Display name, username and bio", chev(), function () { editBio(p); });
     srow(s, "Email", state.user.email || "", chev(), changeEmail);
+    srow(s, "Phone number", state.user.phone ? maskPhone(state.user.phone) : "Add a number to log in with a text code", chev(), phoneSettings);
     srow(s, "Password", "Change your password", chev(), changePassword);
     srow(s, "Switch account", "Log into another account on this device", chev(), switchPopup);
     s = setSec(page, "Privacy");
@@ -1863,8 +2045,185 @@
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "vibin-data.json";
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
   }
+  /* ---------- phone login + identity checks ---------- */
+  function dlg(title, sub, onClose) {
+    var ov = el("div", "overlay show"), m = el("div", "modal"), closed = false;
+    function close(ok) { if (closed) return; closed = true; ov.remove(); if (onClose) onClose(!!ok); }
+    var x = el("button", "close", "\u00d7"); x.addEventListener("click", function () { close(false); }); m.appendChild(x);
+    m.appendChild(el("h3", null, title)); if (sub) m.appendChild(el("p", "sub", sub));
+    ov.appendChild(m); ov.addEventListener("click", function (e) { if (e.target === ov) close(false); });
+    document.body.appendChild(ov);
+    return { m: m, close: close };
+  }
+  function dfield(m, type, ph, ac) {
+    var i = document.createElement("input"); i.type = type; i.className = "field"; i.placeholder = ph;
+    if (ac) i.autocomplete = ac; i.style.marginBottom = "10px"; m.appendChild(i); return i;
+  }
+  function normPhone(p) {
+    p = String(p || "").replace(/[^\d+]/g, "");
+    if (p.indexOf("00") === 0) p = "+" + p.slice(2);
+    return p;
+  }
+  function e164(p) { p = normPhone(p); return p.charAt(0) === "+" ? p : "+" + p; }
+  function maskPhone(p) { p = e164(p); return p.length > 6 ? p.slice(0, 4) + " \u2022\u2022\u2022 " + p.slice(-3) : p; }
+  function maskEmail(e) { var a = String(e || "").split("@"); return a.length === 2 ? a[0].slice(0, 2) + "\u2022\u2022\u2022@" + a[1] : String(e || ""); }
+  function authErr(e) {
+    var m = (e && e.message) || "Something went wrong";
+    if (/rate limit|for security purposes|too many/i.test(m)) return "Too many tries. Wait a minute and try again.";
+    if (/unsupported phone|phone.*(disabled|not enabled)|signups? not allowed|sms.*provider/i.test(m)) return "Phone login is not turned on in Supabase yet.";
+    if (/expired|invalid/i.test(m) && /token|otp|code/i.test(m)) return "That code is wrong or expired. Ask for a new one.";
+    return m;
+  }
+  function cooldown(btn, label, secs) {
+    var left = secs; btn.disabled = true;
+    var t = setInterval(function () {
+      left--; if (!btn.isConnected) { clearInterval(t); return; }
+      if (left <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = label; } else btn.textContent = label + " (" + left + "s)";
+    }, 1000);
+    btn.textContent = label + " (" + left + "s)";
+  }
+
+  function phoneLogin() {
+    if (!sb) { toast("Logins are not connected yet"); return; }
+    var d = dlg("Log in with phone", "We will text you a code. New number? We make you an account.");
+    var un = dfield(d.m, "text", "Username (only needed for new accounts)", "username");
+    var ph = dfield(d.m, "tel", "Phone number with country code, like +353851234567", "tel");
+    var code = dfield(d.m, "text", "Code from the text", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 10; code.style.display = "none";
+    var err = el("div", "error"); d.m.appendChild(err);
+    var go = el("button", "btn", "Send code"); go.style.cssText = "width:100%;margin-top:6px"; d.m.appendChild(go);
+    var re = el("button", "linkbtn", "Resend code"); re.style.display = "none"; d.m.appendChild(re);
+    var stage = 0, num = "";
+    async function send() {
+      err.textContent = "";
+      num = e164(ph.value);
+      if (!/^\+[1-9]\d{7,14}$/.test(num)) { err.textContent = "Enter your number with the country code, like +353851234567."; return false; }
+      var uname = un.value.trim();
+      if (uname && !/^[A-Za-z0-9_.]{2,20}$/.test(uname)) { err.textContent = "Username: 2 to 20 letters, numbers, _ or ."; return false; }
+      go.disabled = true;
+      var opts = { channel: "sms" }; if (uname) opts.data = { username: uname.toLowerCase() };
+      var r = await sb.auth.signInWithOtp({ phone: num, options: opts });
+      go.disabled = false;
+      if (r.error) { err.textContent = authErr(r.error); return false; }
+      return true;
+    }
+    go.addEventListener("click", async function () {
+      if (stage === 0) {
+        if (!(await send())) return;
+        stage = 1; ph.disabled = true; un.style.display = "none"; code.style.display = "block"; re.style.display = "block";
+        go.textContent = "Verify and log in"; cooldown(re, "Resend code", 30); code.focus();
+      } else {
+        err.textContent = ""; if (!code.value.trim()) { err.textContent = "Type the code we texted you."; return; }
+        go.disabled = true;
+        var r = await sb.auth.verifyOtp({ phone: num, token: code.value.trim(), type: "sms" });
+        go.disabled = false;
+        if (r.error) { err.textContent = authErr(r.error); return; }
+        d.close(true); closeModal();
+      }
+    });
+    re.addEventListener("click", async function () { if (await send()) { cooldown(re, "Resend code", 30); toast("New code sent"); } });
+    ph.focus();
+  }
+
+  async function phoneSettings() {
+    if (state.user.phone && !(await confirmIdentity("Verify it's you", "Confirm before changing your phone number."))) return;
+    var d = dlg(state.user.phone ? "Change phone number" : "Add phone number", "We will text you a code to confirm the number.");
+    var ph = dfield(d.m, "tel", "Phone number with country code, like +353851234567", "tel");
+    var code = dfield(d.m, "text", "Code from the text", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 10; code.style.display = "none";
+    var err = el("div", "error"); d.m.appendChild(err);
+    var go = el("button", "btn", "Send code"); go.style.cssText = "width:100%;margin-top:6px"; d.m.appendChild(go);
+    var stage = 0, num = "";
+    go.addEventListener("click", async function () {
+      err.textContent = "";
+      if (stage === 0) {
+        num = e164(ph.value);
+        if (!/^\+[1-9]\d{7,14}$/.test(num)) { err.textContent = "Enter your number with the country code, like +353851234567."; return; }
+        go.disabled = true; var r = await sb.auth.updateUser({ phone: num }); go.disabled = false;
+        if (r.error) { err.textContent = authErr(r.error); return; }
+        stage = 1; ph.disabled = true; code.style.display = "block"; go.textContent = "Confirm number"; code.focus();
+      } else {
+        if (!code.value.trim()) { err.textContent = "Type the code we texted you."; return; }
+        go.disabled = true; var v = await sb.auth.verifyOtp({ phone: num, token: code.value.trim(), type: "phone_change" }); go.disabled = false;
+        if (v.error) { err.textContent = authErr(v.error); return; }
+        state.user.phone = num.replace("+", ""); d.close(true); toast("Phone number saved"); route();
+      }
+    });
+    ph.focus();
+  }
+
+  /* Discord users type their vibin password, everyone else gets a code on their phone (or email if no phone) */
+  function confirmIdentity(title, sub) {
+    return new Promise(function (resolve) {
+      var u = state.user, d = dlg(title, sub, function (ok) { resolve(ok); });
+      var err = el("div", "error"), go = el("button", "btn", "Confirm");
+      go.style.cssText = "width:100%;margin-top:6px";
+      if (!sb) { d.close(false); return; }
+
+      if (u.discord) {
+        d.m.appendChild(el("p", "sub", "You signed in with Discord, so enter your vibin password to continue."));
+        sb.auth.getUser().then(function (g) {
+          var au = g.data && g.data.user;
+          if (au && !hasPassword(au)) {
+            d.m.appendChild(el("p", "otp-hint", "You have not made a vibin password yet. Create one first, then try again."));
+            var mk = el("button", "btn", "Create password"); mk.style.cssText = "width:100%";
+            mk.addEventListener("click", function () { d.close(false); askCreatePassword(au, true); });
+            d.m.appendChild(mk); return;
+          }
+          var pw = dfield(d.m, "password", "Your password", "current-password");
+          d.m.appendChild(err); d.m.appendChild(go);
+          var run = async function () {
+            err.textContent = ""; if (!pw.value) { err.textContent = "Enter your password."; return; }
+            go.disabled = true;
+            var chk = await sb.auth.signInWithPassword({ email: u.email, password: pw.value });
+            go.disabled = false;
+            if (chk.error) { err.textContent = /invalid login|credentials/i.test(chk.error.message || "") ? "That password is not right." : authErr(chk.error); return; }
+            d.close(true);
+          };
+          go.addEventListener("click", run);
+          pw.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); run(); } });
+          pw.focus();
+        });
+        return;
+      }
+
+      if (!u.phone && !u.email) { d.m.appendChild(el("p", "sub", "Your account has no phone or email to send a code to.")); return; }
+      var viaPhone = !!u.phone;
+      var info = el("p", "otp-hint"); d.m.appendChild(info);
+      var code = dfield(d.m, "text", "Verification code", "one-time-code"); code.inputMode = "numeric"; code.maxLength = 10;
+      d.m.appendChild(err); d.m.appendChild(go);
+      var re = el("button", "linkbtn", "Resend code"); d.m.appendChild(re);
+      var sw = null;
+      async function send() {
+        err.textContent = "";
+        var r = await sb.auth.signInWithOtp(viaPhone ? { phone: e164(u.phone), options: { shouldCreateUser: false, channel: "sms" } } : { email: u.email, options: { shouldCreateUser: false } });
+        if (r.error) { err.textContent = authErr(r.error); return false; }
+        info.textContent = "We sent a code to " + (viaPhone ? maskPhone(u.phone) : maskEmail(u.email)) + ".";
+        return true;
+      }
+      if (u.phone && u.email) {
+        sw = el("button", "linkbtn", "Send it to my email instead"); sw.style.display = "block";
+        sw.addEventListener("click", async function () { viaPhone = false; sw.remove(); if (await send()) cooldown(re, "Resend code", 30); });
+        d.m.appendChild(sw);
+      }
+      info.textContent = "Sending a code...";
+      send().then(function (ok) { if (ok) cooldown(re, "Resend code", 30); });
+      re.addEventListener("click", async function () { if (await send()) { cooldown(re, "Resend code", 30); toast("New code sent"); } });
+      var run = async function () {
+        err.textContent = ""; if (!code.value.trim()) { err.textContent = "Type the code we sent you."; return; }
+        go.disabled = true;
+        var v = await sb.auth.verifyOtp(viaPhone ? { phone: e164(u.phone), token: code.value.trim(), type: "sms" } : { email: u.email, token: code.value.trim(), type: "email" });
+        go.disabled = false;
+        if (v.error) { err.textContent = authErr(v.error); return; }
+        d.close(true);
+      };
+      go.addEventListener("click", run);
+      code.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); run(); } });
+      code.focus();
+    });
+  }
+
   async function deactivate() {
     if (!confirm("Deactivate your account? Your profile and videos will be hidden until you log back in.")) return;
+    if (!(await confirmIdentity("Verify it's you", "Deactivating hides your profile and videos."))) return;
     var r = await sb.from("profiles").update({ deactivated: true }).eq("id", state.user.id);
     if (r.error) { toast("Could not deactivate: " + r.error.message); return; }
     logout(); toast("Account deactivated. Log in any time to bring it back.");
@@ -1873,6 +2232,7 @@
     var t = prompt("This permanently deletes your account, videos, comments and messages.\nType your username (" + state.user.name + ") to confirm:");
     if (t === null) return;
     if (t.trim().toLowerCase() !== state.user.name.toLowerCase()) { toast("That does not match your username"); return; }
+    if (!(await confirmIdentity("Verify it's you", "This permanently deletes your account. Confirm to continue."))) return;
     var id = state.user.id;
     var r = await sb.rpc("delete_my_account");
     if (r.error) { toast("Could not delete: " + r.error.message); return; }
@@ -2061,7 +2421,7 @@
       var prof = await ensureProfile(au);
       if (seq !== sessionSeq) return;
       var name = prof ? prof.username : fallbackName(au);
-      state.user = { id: au.id, name: name, email: au.email, bio: prof ? (prof.bio || "") : "" };
+      state.user = { id: au.id, name: name, email: au.email, phone: au.phone || "", discord: (au.identities || []).some(function (i) { return i.provider === "discord"; }) || (au.app_metadata && au.app_metadata.provider === "discord"), bio: prof ? (prof.bio || "") : "" };
       saveAcct(session, name); if (prof) noteAv(prof);
       closeModal();
       await loadMySets();
@@ -2077,6 +2437,7 @@
   }
 
   $("closeModal").addEventListener("click", closeModal);
+  $("phoneBtn").addEventListener("click", function () { closeModal(); phoneLogin(); });
   $("authModal").addEventListener("click", function (e) { if (e.target === this) closeModal(); });
   document.querySelectorAll(".social").forEach(function (b) {
     b.addEventListener("click", function () {
