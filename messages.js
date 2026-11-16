@@ -113,7 +113,19 @@
   var COLS = "id,sender_id,receiver_id,body,created_at,read_at,kind,media_url";
   function isBlocked(id) { return !!(window.vibin && window.vibin.state.blocked.has(id)); }
 
+  function isAdmin() { return !!(window.vibin && window.vibin.state && window.vibin.state.isAdmin); }
+  /* friends, admins (can message anyone), and people an admin has already written to (they can reply) */
+  function canMsg(pid) {
+    if (S.friends.has(pid) || isAdmin()) return true;
+    return !!(S.admins && S.admins.has(pid) && S.thread.some(function (x) { return x.sender_id === pid; }));
+  }
+  function loadAdmins() {
+    return api("rpc/admin_ids", { method: "POST", body: {} }).then(function (rows) {
+      S.admins = new Set((rows || []).map(function (r) { return typeof r === "string" ? r : (r.admin_ids || r); }));
+    }).catch(function () { S.admins = new Set(); });
+  }
   function loadFriends() {
+    loadAdmins();
     return api("rpc/my_friends", { method: "POST", body: {} }).then(function (rows) {
       var m = new Map();
       (rows || []).forEach(function (r) { m.set(r.id, r.username); S.names.set(r.id, r.username); });
@@ -260,7 +272,7 @@
   }
   function updateComposer() {
     if (!S.cur || !ui.input) return;
-    var ok = S.friends.has(S.cur.id);
+    var ok = canMsg(S.cur.id);
     ui.input.disabled = !ok; ui.send.disabled = !ok;
     ui.note.style.display = ok ? "none" : "block";
     ui.note.textContent = "You are no longer friends with @" + S.cur.name + ". Follow each other again to keep chatting.";
@@ -308,7 +320,7 @@
   function sendRaw(p) {
     if (!S.cur || !S.me) return;
     var pid = S.cur.id;
-    if (!S.friends.has(pid)) { toast("You can only message friends"); return; }
+    if (!canMsg(pid)) { toast("You can only message friends"); return; }
     var tmp = { id: "tmp" + Date.now(), sender_id: S.me, receiver_id: pid, body: p.body.slice(0, MAX_LEN), kind: p.kind || "text", media_url: p.media_url || null, created_at: new Date().toISOString(), read_at: null, pending: true };
     S.thread.push(tmp); renderMsgs(true);
     api("messages", { method: "POST", body: { sender_id: S.me, receiver_id: pid, body: tmp.body, kind: tmp.kind, media_url: tmp.media_url }, prefer: "return=representation" })
@@ -330,7 +342,7 @@
     if (!/^image\//.test(file.type)) { toast("Please choose a picture"); return; }
     if (file.size > MAX_IMG_MB * 1024 * 1024) { toast("That picture is over " + MAX_IMG_MB + " MB"); return; }
     var pid = S.cur.id;
-    if (!S.friends.has(pid)) { toast("You can only message friends"); return; }
+    if (!canMsg(pid)) { toast("You can only message friends"); return; }
     var ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "jpg";
     var path = S.me + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
     toast("Sending picture...");
@@ -709,7 +721,7 @@
       readSession();
       if (!S.me) { openLogin(); return; }
       loadFriends().then(function () {
-        if (S.friends.has(uid)) { openPanel(); openThread(uid, name); }
+        if (S.friends.has(uid) || isAdmin()) { openPanel(); openThread(uid, name); }
         else toast("You can message each other once you both follow each other");
       });
     });
